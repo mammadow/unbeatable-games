@@ -94,9 +94,9 @@ The project argues that many simple games lack clear algorithmic strategy and op
 
 ### Team split currently shown
 
-- Member 1: platform and UI
-- Member 2: Tic Tac Toe and AI
-- Member 3: Number Target, third game, report, and presentation
+- Elnur Mammadov: platform and UI
+- Mahammad Alakbarli: Tic Tac Toe and AI
+- Haci Faracov: Number Target, third game, report, and presentation
 
 ## Important instructor-driven constraint already accounted for
 
@@ -366,3 +366,30 @@ When updating this file later, use entries like this:
   - src/App.jsx (complete rewrite)
   - src/styles.css (complete rewrite)
   - README.md (presentation-style)
+
+### 2026-03-31 documentation cleanup
+
+- completed:
+  - integrated SRS content directly into README.md
+  - removed unnecessary documentation files:
+    - docs/proposal.md
+    - docs/proposal-simple.md
+    - docs/SRS.md
+    - docs/stage1-plan.md
+    - docs/QUICK-START.md
+  - kept only:
+    - docs/context-log.md (development history)
+    - docs/Capstone Project.docx (assignment document)
+  - added docs/ to .gitignore
+  - added team member names throughout all files:
+    - Elnur Mammadov (Platform & UI)
+    - Mahammad Alakbarli (Tic Tac Toe & Minimax)
+    - Haci Faracov (Number Target, Connect Four, Documentation)
+- rationale:
+  - README now serves as complete presentation and SRS combined
+  - Simpler structure — one source of truth
+  - Internal docs kept private (gitignored)
+- status:
+  - **READY FOR GITHUB PUSH** ✅
+  - All information consolidated in README
+  - Clean, professional repository structure

@@ -4,7 +4,7 @@
 
 ### *AI-powered mini-games you cannot beat*
 
-[![Stage](https://img.shields.io/badge/Stage-1%20Proposal-gold?style=for-the-badge)](docs/proposal-simple.md)
+[![Stage](https://img.shields.io/badge/Stage-1%20Proposal-gold?style=for-the-badge)](#-capstone-milestones)
 [![React](https://img.shields.io/badge/React-18-61dafb?style=for-the-badge&logo=react)](https://react.dev)
 [![Vite](https://img.shields.io/badge/Vite-5-646cff?style=for-the-badge&logo=vite)](https://vitejs.dev)
 
@@ -14,13 +14,30 @@
 
 <br />
 
-[View Demo](#-quick-start) · [SRS Document](docs/SRS.md) · [Proposal](docs/proposal-simple.md)
+[Quick Start](#-quick-start) · [Requirements](#-software-requirements) · [Team](#-team)
 
 ---
 
 </div>
 
 <br />
+
+## 📖 Table of Contents
+
+- [The Games](#-the-games)
+- [Architecture](#️-architecture)
+- [Algorithms & Data Structures](#-algorithms--data-structures)
+- [Quick Start](#-quick-start)
+- [Software Requirements](#-software-requirements)
+- [Project Structure](#-project-structure)
+- [Capstone Milestones](#-capstone-milestones)
+- [Team](#-team)
+- [Timeline](#-timeline)
+- [Evaluation Criteria](#-evaluation-criteria)
+
+<br />
+
+---
 
 ## 🎮 The Games
 
@@ -137,16 +154,17 @@ npm run build
 ```
 unbeatable-games/
 ├── src/
-│   ├── App.jsx          # Main application component
+│   ├── App.jsx          # Main application with interactive game boards
 │   ├── main.jsx         # React entry point
 │   └── styles.css       # Animations & responsive styles
 ├── docs/
-│   ├── SRS.md           # Software Requirements Specification
-│   ├── proposal-simple.md   # Project proposal (Azerbaijani)
-│   └── stage1-plan.md   # Detailed project plan
+│   ├── context-log.md   # Development history (internal)
+│   └── Capstone Project.docx  # Assignment document
+├── dist/                # Production build (generated)
 ├── index.html           # HTML entry
 ├── package.json         # Dependencies
-└── vite.config.js       # Build configuration
+├── vite.config.js       # Build configuration
+└── .gitignore           # Git ignore rules
 ```
 
 <br />
@@ -169,6 +187,7 @@ unbeatable-games/
 - [x] Expected results
 - [x] Work timeline
 - [x] Interactive demo website
+- [x] Software Requirements Specification (in README)
 
 <br />
 
@@ -176,11 +195,11 @@ unbeatable-games/
 
 ## 👥 Team
 
-| Role | Responsibility |
-|:-----|:---------------|
-| **Member 1** | Platform architecture, UI/UX |
-| **Member 2** | Tic Tac Toe, Minimax implementation |
-| **Member 3** | Number Target, Connect Four, Documentation |
+| Member | Responsibility |
+|:-------|:---------------|
+| **Elnur Mammadov** | Platform architecture, UI/UX |
+| **Mahammad Alakbarli** | Tic Tac Toe, Minimax implementation |
+| **Haci Faracov** | Number Target, Connect Four, Documentation |
 
 <br />
 
@@ -212,17 +231,6 @@ Week 15    ░░░░░░░░░░░░░░░░░░██  Final S
 
 <br />
 
----
-
-## 📚 Documentation
-
-| Document | Description |
-|:---------|:------------|
-| [SRS.md](docs/SRS.md) | Software Requirements Specification |
-| [proposal-simple.md](docs/proposal-simple.md) | Formal proposal (Azerbaijani) |
-| [stage1-plan.md](docs/stage1-plan.md) | Detailed project plan |
-| [context-log.md](docs/context-log.md) | Development history |
-
 <br />
 
 ---
@@ -232,6 +240,8 @@ Week 15    ░░░░░░░░░░░░░░░░░░██  Final S
 ### Built with 🧠 for Capstone 2026
 
 **Data Structures & Algorithms**
+
+**Team:** Elnur Mammadov · Mahammad Alakbarli · Haci Faracov
 
 ---
 
