@@ -124,6 +124,109 @@ Drop discs in a 7×6 grid. Connect 4 to win. Alpha-beta pruning with position ev
 
 ---
 
+## 📋 Software Requirements Specification
+
+### Functional Requirements
+
+| ID | Requirement | Priority |
+|:---|:------------|:---------|
+| **FR-01** | User can select a game from available options | High |
+| **FR-02** | User can play Tic Tac Toe against AI | High |
+| **FR-03** | User can play Number Target against AI | High |
+| **FR-04** | User can play Connect Four against AI | Medium |
+| **FR-05** | AI calculates optimal move within 500ms | High |
+| **FR-06** | System detects win/lose/draw conditions | High |
+| **FR-07** | User can restart game at any time | Medium |
+
+### Non-Functional Requirements
+
+| ID | Requirement | Specification |
+|:---|:------------|:--------------|
+| **NFR-01** | Performance | AI response < 500ms |
+| **NFR-02** | Compatibility | Chrome 90+, Firefox 88+, Safari 14+, Edge 90+ |
+| **NFR-03** | Responsiveness | Functional on screens 320px+ width |
+| **NFR-04** | Accessibility | Supports prefers-reduced-motion |
+| **NFR-05** | Reliability | AI never makes suboptimal moves |
+
+### Algorithm Implementations
+
+#### Tic Tac Toe — Minimax
+
+```javascript
+function minimax(board, depth, isMaximizing) {
+    if (terminal_state(board)) {
+        return evaluate(board);
+    }
+    
+    if (isMaximizing) {
+        let best = -Infinity;
+        for (each empty cell) {
+            make_move(cell, AI);
+            best = max(best, minimax(board, depth+1, false));
+            undo_move(cell);
+        }
+        return best;
+    } else {
+        let best = +Infinity;
+        for (each empty cell) {
+            make_move(cell, PLAYER);
+            best = min(best, minimax(board, depth+1, true));
+            undo_move(cell);
+        }
+        return best;
+    }
+}
+```
+
+**Time Complexity:** O(9!) worst case → O(n) with alpha-beta pruning  
+**Space Complexity:** O(9) for board state
+
+#### Number Target — Dynamic Programming
+
+```javascript
+function optimalMove(currentSum, target, maxChoice) {
+    // Winning strategy: make sum % (maxChoice + 1) == 1
+    for (let choice = 1; choice <= maxChoice; choice++) {
+        let newSum = currentSum + choice;
+        if (newSum >= target) return choice;  // Win immediately
+        if ((target - newSum) % (maxChoice + 1) === 0) {
+            return choice;  // Force winning position
+        }
+    }
+    return 1;  // No winning move available
+}
+```
+
+**Time Complexity:** O(maxChoice) per move = O(1) constant time  
+**Space Complexity:** O(1)
+
+#### Connect Four — Heuristic Minimax with Alpha-Beta
+
+```javascript
+function evaluate(board) {
+    let score = 0;
+    
+    // Check all possible 4-cell windows
+    for (each window of 4 cells) {
+        if (window has 4 AI discs) score += 1000;
+        if (window has 3 AI + 1 empty) score += 10;
+        if (window has 2 AI + 2 empty) score += 2;
+        if (window has 4 opponent) score -= 1000;
+    }
+    
+    // Prioritize center column
+    score += centerColumnCount(board) * 3;
+    return score;
+}
+```
+
+**Time Complexity:** O(b^d) where b=7 branches, d=search depth  
+**Space Complexity:** O(42) for board state
+
+<br />
+
+---
+
 ## 🚀 Quick Start
 
 ```bash
