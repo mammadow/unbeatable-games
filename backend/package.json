@@ -1,0 +1,25 @@
+{
+  "name": "unbeatable-games-backend",
+  "version": "1.0.0",
+  "description": "Unbeatable Games Platform Backend",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "migrate": "node migrations/run.js",
+    "test": "node tests/health-check.js"
+  },
+  "keywords": [],
+  "author": "Team",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "pg": "^8.10.0",
+    "jsonwebtoken": "^8.5.1",
+    "bcryptjs": "^2.4.3",
+    "uuid": "^9.0.0"
+  }
+}

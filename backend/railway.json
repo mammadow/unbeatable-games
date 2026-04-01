@@ -1,0 +1,9 @@
+{
+  "buildCommand": "npm install",
+  "startCommand": "npm run start",
+  "environmentVariables": {
+    "DATABASE_URL": "postgresql://",
+    "JWT_SECRET": "",
+    "NODE_ENV": "production"
+  }
+}
