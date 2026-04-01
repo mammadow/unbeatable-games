@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import api from "../api/client.js";
+import { useAuth } from "../context/AuthContext.jsx";
 
 const ROWS = 6;
 const COLS = 7;
@@ -103,11 +105,14 @@ function getBestCol(board) {
 }
 
 export default function ConnectFour({ onBack }) {
+  const { user } = useAuth();
   const [board, setBoard] = useState(createBoard);
   const [playerTurn, setPlayerTurn] = useState(true);
-  const [result, setResult] = useState(null); // "Y" | "R" | "draw"
+  const [result, setResult] = useState(null);
   const [thinking, setThinking] = useState(false);
   const [hoverCol, setHoverCol] = useState(null);
+  const [startTime] = useState(Date.now());
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (playerTurn || result) return;
@@ -144,6 +149,24 @@ export default function ConnectFour({ onBack }) {
     setThinking(false);
     setHoverCol(null);
   }
+
+  async function saveGame() {
+    if (!user || !result || saving) return;
+    setSaving(true);
+    try {
+      const duration = Math.round((Date.now() - startTime) / 1000);
+      await api.recordGame("connect-four", result === "Y" ? "win" : result === "draw" ? "draw" : "loss", duration, result === "Y" ? 1 : 0, result === "R" ? 1 : 0);
+    } catch (err) {
+      console.error("Failed to save game:", err);
+    }
+    setSaving(false);
+  }
+
+  useEffect(() => {
+    if (result) {
+      saveGame();
+    }
+  }, [result]);
 
   const status = result
     ? result === "draw" ? "It's a Draw!" : result === "Y" ? "You Win! 🎉" : "AI Wins!"
@@ -209,8 +232,11 @@ export default function ConnectFour({ onBack }) {
         </div>
 
         {result && (
-          <button className="reset-btn" onClick={reset}>Play Again</button>
+          <button className="reset-btn" onClick={reset} disabled={saving}>
+            {saving ? "Saving..." : "Play Again"}
+          </button>
         )}
+        {user && <p style={{ marginTop: "20px", fontSize: "12px", color: "var(--text-dim)" }}>Logged in as: {user.username}</p>}
       </main>
     </div>
   );

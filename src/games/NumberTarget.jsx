@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
+import api from "../api/client.js";
+import { useAuth } from "../context/AuthContext.jsx";
 
-// Losing positions for whoever must move from them: 1, 12, 23, 34, 45, 56, 67, 78, 89
-// AI plays first, always moves to a position p where (100 - p) % 11 === 0
 function getAIMove(current) {
   for (let add = 1; add <= 10; add++) {
     const next = current + add;
@@ -12,13 +12,16 @@ function getAIMove(current) {
 }
 
 export default function NumberTarget({ onBack }) {
+  const { user } = useAuth();
   const [current, setCurrent] = useState(0);
-  const [playerTurn, setPlayerTurn] = useState(false); // AI moves first
-  const [result, setResult] = useState(null); // "win" | "lose"
+  const [playerTurn, setPlayerTurn] = useState(false);
+  const [result, setResult] = useState(null);
   const [lastAdd, setLastAdd] = useState(null);
   const [lastWho, setLastWho] = useState(null);
   const [moveKey, setMoveKey] = useState(0);
   const [thinking, setThinking] = useState(false);
+  const [startTime] = useState(Date.now());
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (playerTurn || result) return;
@@ -48,6 +51,18 @@ export default function NumberTarget({ onBack }) {
     else setPlayerTurn(false);
   }
 
+  async function saveGame() {
+    if (!user || !result || saving) return;
+    setSaving(true);
+    try {
+      const duration = Math.round((Date.now() - startTime) / 1000);
+      await api.recordGame("number-target", result === "win" ? "win" : "loss", duration, result === "win" ? 1 : 0, result === "lose" ? 1 : 0);
+    } catch (err) {
+      console.error("Failed to save game:", err);
+    }
+    setSaving(false);
+  }
+
   function reset() {
     setCurrent(0);
     setPlayerTurn(false);
@@ -57,6 +72,12 @@ export default function NumberTarget({ onBack }) {
     setMoveKey(0);
     setThinking(false);
   }
+
+  useEffect(() => {
+    if (result) {
+      saveGame();
+    }
+  }, [result]);
 
   const progress = Math.min((current / 100) * 100, 100);
 
@@ -124,8 +145,11 @@ export default function NumberTarget({ onBack }) {
         </div>
 
         {result && (
-          <button className="reset-btn" onClick={reset}>Play Again</button>
+          <button className="reset-btn" onClick={reset} disabled={saving}>
+            {saving ? "Saving..." : "Play Again"}
+          </button>
         )}
+        {user && <p style={{ marginTop: "20px", fontSize: "12px", color: "var(--text-dim)" }}>Logged in as: {user.username}</p>}
       </main>
     </div>
   );

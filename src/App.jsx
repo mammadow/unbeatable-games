@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { AuthProvider, useAuth } from "./context/AuthContext";
+import AuthScreen from "./screens/AuthScreen";
 import TicTacToe from "./games/TicTacToe";
 import NumberTarget from "./games/NumberTarget";
 import ConnectFour from "./games/ConnectFour";
@@ -36,9 +38,22 @@ const COMPONENTS = {
   "connect-four": ConnectFour,
 };
 
-export default function App() {
+function AppContent() {
+  const { user, loading } = useAuth();
   const [screen, setScreen] = useState("home");
   const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
+
+  if (loading) {
+    return (
+      <div className="app" style={{ justifyContent: "center", alignItems: "center" }}>
+        <div style={{ fontSize: "24px", color: "var(--text-dim)" }}>Loading...</div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <AuthScreen onAuthenticated={() => {}} />;
+  }
 
   if (screen !== "home") {
     const Game = COMPONENTS[screen];
@@ -79,6 +94,12 @@ export default function App() {
         <div className="logo">
           <span className="logo-icon">⚡</span>
           <span className="logo-text">Unbeatable</span>
+        </div>
+        <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
+          <span style={{ fontSize: "14px", color: "var(--text-dim)" }}>
+            Hi, {user.username}!
+          </span>
+          {/* Add profile/logout buttons here later */}
         </div>
       </header>
 
@@ -129,5 +150,13 @@ export default function App() {
         <span>Capstone Project • 2026</span>
       </footer>
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 }

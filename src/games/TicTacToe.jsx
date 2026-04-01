@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import api from "../api/client.js";
+import { useAuth } from "../context/AuthContext.jsx";
 
 const WIN_LINES = [
   [0,1,2],[3,4,5],[6,7,8],
@@ -65,11 +67,14 @@ function getBestMove(board) {
 }
 
 export default function TicTacToe({ onBack }) {
+  const { user } = useAuth();
   const [board, setBoard] = useState(Array(9).fill(null));
   const [playerTurn, setPlayerTurn] = useState(true);
   const [result, setResult] = useState(null);
   const [winLine, setWinLine] = useState([]);
   const [thinking, setThinking] = useState(false);
+  const [startTime] = useState(Date.now());
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (playerTurn || result) return;
@@ -99,6 +104,18 @@ export default function TicTacToe({ onBack }) {
     else setPlayerTurn(false);
   }
 
+  async function saveGame() {
+    if (!user || !result || saving) return;
+    setSaving(true);
+    try {
+      const duration = Math.round((Date.now() - startTime) / 1000);
+      await api.recordGame("tictactoe", result === "X" ? "win" : result === "draw" ? "draw" : "loss", duration, result === "X" ? 1 : 0, result === "O" ? 1 : 0);
+    } catch (err) {
+      console.error("Failed to save game:", err);
+    }
+    setSaving(false);
+  }
+
   function reset() {
     setBoard(Array(9).fill(null));
     setPlayerTurn(true);
@@ -110,6 +127,12 @@ export default function TicTacToe({ onBack }) {
   const status = result
     ? result === "draw" ? "It's a Draw!" : result === "X" ? "You Win! 🎉" : "AI Wins!"
     : thinking ? "AI is thinking..." : playerTurn ? "Your turn  (X)" : "AI's turn  (O)";
+
+  useEffect(() => {
+    if (result) {
+      saveGame();
+    }
+  }, [result]);
 
   return (
     <div className="app">
@@ -142,8 +165,11 @@ export default function TicTacToe({ onBack }) {
           ))}
         </div>
         {result && (
-          <button className="reset-btn" onClick={reset}>Play Again</button>
+          <button className="reset-btn" onClick={reset} disabled={saving}>
+            {saving ? "Saving..." : "Play Again"}
+          </button>
         )}
+        {user && <p style={{ marginTop: "20px", fontSize: "12px", color: "var(--text-dim)" }}>Logged in as: {user.username}</p>}
       </main>
     </div>
   );
