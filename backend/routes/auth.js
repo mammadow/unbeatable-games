@@ -88,7 +88,7 @@ router.post("/login", async (req, res) => {
 
     const token = generateToken(user.id, user.username);
 
-    res.json({
+    res.status(200).json({
       message: "Login successful",
       user: {
         id: user.id,
@@ -106,33 +106,40 @@ router.post("/login", async (req, res) => {
 // POST /api/auth/guest (anonymous login)
 router.post("/guest", async (req, res) => {
   try {
-    const guestUsername = `Guest_${Date.now()}`;
-    const guestEmail = `guest_${Date.now()}@unbeatable.local`;
     const id = uuidv4();
+    // Use UUID for unique guest identifier to prevent collision
+    const guestShortId = id.substring(0, 8);
+    const guestUsername = `Guest_${guestShortId}`;
+    const guestEmail = `guest_${id}@unbeatable.local`;
 
-    await pool.query(
-      "INSERT INTO users (id, username, email, password_hash) VALUES ($1, $2, $3, $4)",
+    // Insert user
+    const userResult = await pool.query(
+      "INSERT INTO users (id, username, email, password_hash) VALUES ($1, $2, $3, $4) RETURNING id, username, email",
       [id, guestUsername, guestEmail, "no_password"]
     );
 
+    // Insert leaderboard entry
     await pool.query(
       "INSERT INTO leaderboards (user_id) VALUES ($1)",
       [id]
     );
 
+    const user = userResult.rows[0];
     const token = generateToken(id, guestUsername);
 
-    res.json({
+    res.status(201).json({
       message: "Guest login successful",
-      user: {
-        id,
-        username: guestUsername,
-        email: guestEmail,
-      },
+      user,
       token,
     });
   } catch (error) {
-    console.error("Guest login error:", error);
+    console.error("Guest login error:", error.message);
+
+    // Check for unique constraint violation
+    if (error.code === "23505") {
+      return res.status(409).json({ error: "Guest user already exists" });
+    }
+
     res.status(500).json({ error: "Guest login failed" });
   }
 });

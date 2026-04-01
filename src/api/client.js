@@ -91,6 +91,7 @@ class APIClient {
   async guestLogin() {
     const data = await this.request("/auth/guest", {
       method: "POST",
+      body: JSON.stringify({}),
     });
     this.setToken(data.token);
     return data;
