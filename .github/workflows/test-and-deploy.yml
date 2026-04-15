@@ -121,14 +121,19 @@ jobs:
 
       - name: Deploy to Vercel
         working-directory: ./frontend
-        run: |
-          npm install -g vercel
-          vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
-          vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
-          vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
         env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          if [ -z "$VERCEL_TOKEN" ]; then
+            echo "⚠️  VERCEL_TOKEN not configured — skipping frontend deploy"
+            exit 0
+          fi
+          npm install -g vercel
+          vercel pull --yes --environment=production --token=$VERCEL_TOKEN
+          vercel build --prod --token=$VERCEL_TOKEN
+          vercel deploy --prebuilt --prod --token=$VERCEL_TOKEN
 
   deploy-backend:
     needs: [test, lint]
@@ -140,11 +145,15 @@ jobs:
 
       - name: Deploy to Railway
         working-directory: ./backend
-        run: |
-          npm install -g @railway/cli
-          railway up --service unbeatable-games-backend --detach
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: |
+          if [ -z "$RAILWAY_TOKEN" ]; then
+            echo "⚠️  RAILWAY_TOKEN not configured — skipping backend deploy"
+            exit 0
+          fi
+          npm install -g @railway/cli
+          railway up --service unbeatable-games-backend --detach
 
   notify:
     needs: [test, lint]
