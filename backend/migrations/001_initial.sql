@@ -45,13 +45,30 @@ CREATE TABLE IF NOT EXISTS leaderboards (
   num_target_wins INT DEFAULT 0,
   connectfour_rating INT DEFAULT 1000,
   connectfour_wins INT DEFAULT 0,
+  memory_rating INT DEFAULT 1000,
+  memory_wins INT DEFAULT 0,
+  rps_rating INT DEFAULT 1000,
+  rps_wins INT DEFAULT 0,
+  reversi_rating INT DEFAULT 1000,
+  reversi_wins INT DEFAULT 0,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Add new game columns to existing tables (safe to run multiple times)
+ALTER TABLE leaderboards ADD COLUMN IF NOT EXISTS memory_rating INT DEFAULT 1000;
+ALTER TABLE leaderboards ADD COLUMN IF NOT EXISTS memory_wins INT DEFAULT 0;
+ALTER TABLE leaderboards ADD COLUMN IF NOT EXISTS rps_rating INT DEFAULT 1000;
+ALTER TABLE leaderboards ADD COLUMN IF NOT EXISTS rps_wins INT DEFAULT 0;
+ALTER TABLE leaderboards ADD COLUMN IF NOT EXISTS reversi_rating INT DEFAULT 1000;
+ALTER TABLE leaderboards ADD COLUMN IF NOT EXISTS reversi_wins INT DEFAULT 0;
 
 -- Create indexes for leaderboards
 CREATE INDEX IF NOT EXISTS idx_leaderboards_tictactoe ON leaderboards(tictactoe_rating DESC);
 CREATE INDEX IF NOT EXISTS idx_leaderboards_num_target ON leaderboards(num_target_rating DESC);
 CREATE INDEX IF NOT EXISTS idx_leaderboards_connectfour ON leaderboards(connectfour_rating DESC);
+CREATE INDEX IF NOT EXISTS idx_leaderboards_memory ON leaderboards(memory_rating DESC);
+CREATE INDEX IF NOT EXISTS idx_leaderboards_rps ON leaderboards(rps_rating DESC);
+CREATE INDEX IF NOT EXISTS idx_leaderboards_reversi ON leaderboards(reversi_rating DESC);
 
 -- Analytics table
 CREATE TABLE IF NOT EXISTS analytics (

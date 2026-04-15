@@ -135,12 +135,31 @@ router.post("/guest", async (req, res) => {
   } catch (error) {
     console.error("Guest login error:", error.message);
 
-    // Check for unique constraint violation
+    // Check for specific errors
     if (error.code === "23505") {
+      // Unique constraint violation
       return res.status(409).json({ error: "Guest user already exists" });
     }
 
-    res.status(500).json({ error: "Guest login failed" });
+    if (error.code === "ECONNREFUSED" || error.message?.includes("connect ECONNREFUSED")) {
+      return res.status(503).json({
+        error: "Database unavailable",
+        details: "PostgreSQL service not running"
+      });
+    }
+
+    if (error.code === "ENOENT") {
+      return res.status(503).json({
+        error: "Database unavailable",
+        details: "Database connection failed"
+      });
+    }
+
+    console.error("Full error:", error);
+    res.status(500).json({
+      error: "Guest login failed",
+      details: process.env.NODE_ENV === "development" ? error.message : undefined
+    });
   }
 });
 

@@ -25,7 +25,7 @@ router.post("/record", verifyToken, async (req, res) => {
       return res.status(400).json({ error: "Invalid result value" });
     }
 
-    const validGames = ["tictactoe", "number-target", "connect-four"];
+    const validGames = ["tictactoe", "number-target", "connect-four", "memory-match", "rps", "reversi"];
     if (!validGames.includes(gameType)) {
       return res.status(400).json({ error: "Invalid game type" });
     }
@@ -62,6 +62,9 @@ router.post("/record", verifyToken, async (req, res) => {
       tictactoe: { rating: "tictactoe_rating", wins: "tictactoe_wins" },
       "number-target": { rating: "num_target_rating", wins: "num_target_wins" },
       "connect-four": { rating: "connectfour_rating", wins: "connectfour_wins" },
+      "memory-match": { rating: "memory_rating", wins: "memory_wins" },
+      rps: { rating: "rps_rating", wins: "rps_wins" },
+      reversi: { rating: "reversi_rating", wins: "reversi_wins" },
     };
 
     const columns = columnMap[gameType];
@@ -108,8 +111,11 @@ router.get("/stats/:gameType", verifyToken, async (req, res) => {
     const stats = { gameType, total: 0, wins: 0, losses: 0, draws: 0 };
 
     result.rows.forEach((row) => {
-      stats.total += row.count;
-      stats[row.result] = row.count;
+      const count = parseInt(row.count, 10);
+      stats.total += count;
+      if (row.result === "win") stats.wins = count;
+      else if (row.result === "loss") stats.losses = count;
+      else if (row.result === "draw") stats.draws = count;
     });
 
     stats.winRate = stats.total > 0 ? ((stats.wins / stats.total) * 100).toFixed(2) : 0;

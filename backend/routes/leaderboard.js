@@ -10,6 +10,9 @@ function getLeaderboardColumn(gameType) {
     tictactoe: { rating: "tictactoe_rating", wins: "tictactoe_wins" },
     "number-target": { rating: "num_target_rating", wins: "num_target_wins" },
     "connect-four": { rating: "connectfour_rating", wins: "connectfour_wins" },
+    "memory-match": { rating: "memory_rating", wins: "memory_wins" },
+    rps: { rating: "rps_rating", wins: "rps_wins" },
+    reversi: { rating: "reversi_rating", wins: "reversi_wins" },
   };
   return columnMap[gameType] || null;
 }

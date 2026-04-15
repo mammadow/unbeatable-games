@@ -50,13 +50,13 @@ app.use("/api/auth", authRoutes);
 app.use("/api/games", gameRoutes);
 app.use("/api/leaderboard", leaderboardRoutes);
 
-// Error handling
-app.use(errorHandler);
-
 // 404 handler
 app.use((req, res) => {
   res.status(404).json({ error: "Route not found" });
 });
+
+// Error handling
+app.use(errorHandler);
 
 // Start server with database connection check
 const dbHealthCheck = async () => {
@@ -65,14 +65,29 @@ const dbHealthCheck = async () => {
     console.log("✅ Database connection established");
     return true;
   } catch (error) {
-    console.error("❌ Database connection failed:", error.message);
+    console.error("⚠️ Database connection failed:", error.message);
+    console.warn("\nℹ️ Running in OFFLINE MODE - Database required for full functionality");
+    console.warn("\n📝 To fix:");
+    console.warn("  1. Start PostgreSQL service");
+    console.warn("  2. Create database: psql -U postgres");
+    console.warn("     CREATE DATABASE unbeatable_games;");
+    console.warn("     CREATE USER gameuser WITH PASSWORD 'gamepass123';");
+    console.warn("     GRANT ALL PRIVILEGES ON DATABASE unbeatable_games TO gameuser;");
+    console.warn("  3. Run migrations: npm run migrate");
+    console.warn("  4. Restart backend\n");
+
+    // In development, allow starting without DB for testing
+    if (process.env.NODE_ENV !== "production") {
+      console.log("✅ Starting in development mode without database...\n");
+      return true;
+    }
     return false;
   }
 };
 
 dbHealthCheck().then(connected => {
-  if (!connected) {
-    console.error("Cannot start server without database connection");
+  if (!connected && process.env.NODE_ENV === "production") {
+    console.error("❌ Cannot start production server without database connection");
     process.exit(1);
   }
 

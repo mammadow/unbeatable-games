@@ -4,13 +4,16 @@ import AuthScreen from "./screens/AuthScreen";
 import TicTacToe from "./games/TicTacToe";
 import NumberTarget from "./games/NumberTarget";
 import ConnectFour from "./games/ConnectFour";
+import MemoryMatch from "./games/MemoryMatch";
+import RockPaperScissors from "./games/RockPaperScissors";
+import Reversi from "./games/Reversi";
 
 const GAMES = [
   {
     id: "tictactoe",
     icon: "✕",
     title: "Tic Tac Toe",
-    color: "#e2c060",
+    color: "#FFD700",
     algo: "Minimax + Alpha-Beta",
     desc: "Classic 3×3 grid. The AI plays perfectly — a draw is the best you can do.",
   },
@@ -18,7 +21,7 @@ const GAMES = [
     id: "number-target",
     icon: "∑",
     title: "Number Target",
-    color: "#7dd3c7",
+    color: "#00D4FF",
     algo: "Game Theory (Nim)",
     desc: "Take turns adding 1–10. First to reach 100 wins. The math is against you.",
   },
@@ -26,9 +29,33 @@ const GAMES = [
     id: "connect-four",
     icon: "◉",
     title: "Connect Four",
-    color: "#ef7768",
+    color: "#FF3838",
     algo: "Minimax depth-6",
     desc: "Drop discs and connect four in a row. The AI looks 6 moves ahead.",
+  },
+  {
+    id: "memory-match",
+    icon: "🃏",
+    title: "Memory Match",
+    color: "#9B59FF",
+    algo: "Perfect Memory",
+    desc: "Flip cards and find pairs. The AI never forgets a single card it has seen.",
+  },
+  {
+    id: "rps",
+    icon: "✊",
+    title: "Rock Paper Scissors",
+    color: "#FF9900",
+    algo: "Pattern Detection",
+    desc: "Best of 7. The AI studies your move history and counters your patterns.",
+  },
+  {
+    id: "reversi",
+    icon: "⬤",
+    title: "Reversi",
+    color: "#00FF87",
+    algo: "Minimax + Position",
+    desc: "Flip your opponent's discs on a 6×6 board. AI values corners above all else.",
   },
 ];
 
@@ -36,10 +63,13 @@ const COMPONENTS = {
   tictactoe: TicTacToe,
   "number-target": NumberTarget,
   "connect-four": ConnectFour,
+  "memory-match": MemoryMatch,
+  rps: RockPaperScissors,
+  reversi: Reversi,
 };
 
 function AppContent() {
-  const { user, loading } = useAuth();
+  const { user, loading, logout } = useAuth();
   const [screen, setScreen] = useState("home");
   const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
 
@@ -73,18 +103,18 @@ function AppContent() {
       <div
         className="glow-bg"
         style={{
-          background: `radial-gradient(circle at ${mousePos.x}% ${mousePos.y}%, rgba(226,192,96,0.12) 0%, transparent 50%)`,
+          background: `radial-gradient(circle at ${mousePos.x}% ${mousePos.y}%, rgba(255,215,0,0.06) 0%, transparent 50%)`,
         }}
       />
       <div className="particles">
-        {Array.from({ length: 20 }, (_, i) => (
+        {Array.from({ length: 24 }, (_, i) => (
           <span
             key={i}
             className="particle"
             style={{
-              left: `${(i * 5.13) % 100}%`,
-              animationDelay: `${(i * 0.7) % 7}s`,
-              animationDuration: `${8 + (i % 7)}s`,
+              left: `${(i * 4.17) % 100}%`,
+              animationDelay: `${(i * 0.6) % 8}s`,
+              animationDuration: `${10 + (i % 8)}s`,
             }}
           />
         ))}
@@ -95,16 +125,22 @@ function AppContent() {
           <span className="logo-icon">⚡</span>
           <span className="logo-text">Unbeatable</span>
         </div>
-        <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
-          <span style={{ fontSize: "14px", color: "var(--text-dim)" }}>
-            Hi, {user.username}!
+        <div className="header-user">
+          <span className="header-greeting">
+            Welcome, <strong>{user.username}</strong>
           </span>
-          {/* Add profile/logout buttons here later */}
+          <button className="header-logout" onClick={logout}>
+            Sign Out
+          </button>
         </div>
       </header>
 
       <main className="main">
         <section className="hero">
+          <div className="hero-badge">
+            <span className="hero-badge-dot" />
+            6 Games Live
+          </div>
           <h1 className="title">
             <span className="title-line">Play Against</span>
             <span className="title-line accent">Perfect AI</span>
@@ -120,11 +156,15 @@ function AppContent() {
               style={{ "--accent": g.color }}
               onClick={() => setScreen(g.id)}
             >
-              <span className="home-card-icon">{g.icon}</span>
-              <span className="home-card-title">{g.title}</span>
-              <span className="home-card-algo">{g.algo}</span>
-              <p className="home-card-desc">{g.desc}</p>
-              <span className="home-card-play">Play Now →</span>
+              <div className="home-card-banner">
+                <span className="home-card-icon">{g.icon}</span>
+              </div>
+              <div className="home-card-body">
+                <span className="home-card-title">{g.title}</span>
+                <span className="home-card-algo">{g.algo}</span>
+                <p className="home-card-desc">{g.desc}</p>
+                <span className="home-card-play">Play Now →</span>
+              </div>
               <span className="home-card-glow" />
             </button>
           ))}
