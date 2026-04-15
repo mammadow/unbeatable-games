@@ -4,10 +4,10 @@
 
 ### *AI-powered mini-games you cannot beat*
 
-[![Stage](https://img.shields.io/badge/Stage-2%20MVP%20Complete-brightgreen?style=for-the-badge)](.)
-[![Node.js](https://img.shields.io/badge/Node.js-18+-339933?style=for-the-badge&logo=node.js)](https://nodejs.org/)
+[![Build](https://img.shields.io/github/actions/workflow/status/mammadow/unbeatable-games/test-and-deploy.yml?branch=master&style=for-the-badge&label=CI)](https://github.com/mammadow/unbeatable-games/actions)
+[![Node.js](https://img.shields.io/badge/Node.js-20+-339933?style=for-the-badge&logo=node.js)](https://nodejs.org/)
 [![React](https://img.shields.io/badge/React-18-61dafb?style=for-the-badge&logo=react)](https://react.dev)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-12+-336791?style=for-the-badge&logo=postgresql)](https://www.postgresql.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-14+-336791?style=for-the-badge&logo=postgresql)](https://www.postgresql.org/)
 
 <br />
 
@@ -15,34 +15,44 @@
 
 <br />
 
-[Setup Guide](#-quick-setup) · [Features](#-features) · [API](#-api-endpoints)
+[Quick Start](#-quick-start) · [Games](#-games) · [API](#-api-endpoints) · [Deploy](#-deployment)
 
 ---
 
 </div>
 
-## 🎮 Three Unbeatable AI Games
+## 🎮 Games
 
 | Game | Algorithm | Difficulty |
 |------|-----------|------------|
-| **Tic Tac Toe** | Minimax + Alpha-Beta | Perfect / Unbeatable |
-| **Number Target** | Game Theory (Nim) | Perfect / Unbeatable |
-| **Connect Four** | Minimax Depth-6 | Very Hard / Almost Unbeatable |
+| **Tic Tac Toe** | Minimax + Alpha-Beta Pruning | Perfect — Unbeatable |
+| **Number Target** | Game Theory (Nim) | Perfect — Unbeatable |
+| **Connect Four** | Minimax Depth-6 | Very Hard |
+| **Memory Match** | Perfect Photographic Memory | Unbeatable |
+| **Rock Paper Scissors** | Pattern Detection | Adaptive |
+| **Reversi** | Minimax + Positional Weights | Very Hard |
 
 ## ✨ Features
 
-✅ 3 AI-Powered Games  
-✅ JWT Authentication (Email/Password + Guest)  
-✅ Game Statistics & History  
-✅ Leaderboards (Global & Per-Game)  
-✅ Auto-Save Results  
-✅ Beautiful Dark UI with Animations  
+- 6 AI-powered games with distinct algorithms
+- JWT authentication — Email/Password & Guest login
+- Auto-save game results to database
+- Personal stats, game history, and win rates
+- Global & per-game leaderboards with rankings
+- Casino-style dark UI with neon animations
+- CI/CD via GitHub Actions → Vercel + Railway
 
 ## 🚀 Quick Start
 
-### 1. Requirements
-- Node.js 18+
-- PostgreSQL 12+
+### Requirements
+- Node.js 20+
+- PostgreSQL 14+
+
+### 1. Clone
+```bash
+git clone https://github.com/mammadow/unbeatable-games.git
+cd unbeatable-games
+```
 
 ### 2. Setup Database
 ```bash
@@ -55,179 +65,164 @@ GRANT ALL PRIVILEGES ON DATABASE unbeatable_games TO gameuser;
 ### 3. Backend
 ```bash
 cd backend
-npm install --legacy-peer-deps
+cp .env.example .env   # edit DATABASE_URL, JWT_SECRET
+npm install
 npm run migrate
-npm run dev  # Port 5000
+npm run dev            # http://localhost:5000
 ```
 
 ### 4. Frontend
 ```bash
-npm install --legacy-peer-deps
-npm run dev  # Port 5173
+cd frontend
+cp .env.example .env.local   # set VITE_API_URL=http://localhost:5000/api
+npm install
+npm run dev                  # http://localhost:5173
 ```
 
-### 5. Play
-Open http://localhost:5173
+## 🏗️ Project Structure
 
-**See [SETUP_GUIDE.md](./SETUP_GUIDE.md) for detailed instructions**
+```
+unbeatable-games/
+├── frontend/
+│   ├── src/
+│   │   ├── games/          # TicTacToe, NumberTarget, ConnectFour,
+│   │   │                   # MemoryMatch, RockPaperScissors, Reversi
+│   │   ├── screens/        # AuthScreen
+│   │   ├── context/        # AuthContext (JWT state)
+│   │   ├── api/            # API client with retry logic
+│   │   └── App.jsx
+│   └── vite.config.js
+│
+└── backend/
+    ├── routes/             # auth, games, leaderboard
+    ├── middleware/         # JWT auth, error handler
+    ├── config/             # PostgreSQL pool
+    ├── migrations/         # SQL schema
+    └── server.js
+```
 
 ## 🔌 API Endpoints
 
 ```
-POST /api/auth/register
-POST /api/auth/login
-POST /api/auth/guest
+POST  /api/auth/register
+POST  /api/auth/login
+POST  /api/auth/guest
 
-POST   /api/games/record
-GET    /api/games/stats/:gameType
-GET    /api/games/history
-GET    /api/games/profile
+POST  /api/games/record
+GET   /api/games/stats/:gameType
+GET   /api/games/history
+GET   /api/games/profile
 
-GET    /api/leaderboard/:gameType
-GET    /api/leaderboard/:gameType/rank
-GET    /api/leaderboard
+GET   /api/leaderboard
+GET   /api/leaderboard/:gameType
+GET   /api/leaderboard/:gameType/rank
+
+GET   /health
 ```
 
-## 🏗️ Architecture
+## 🧠 AI Algorithms
 
-```
-Frontend (React 18 + Vite)
-    ↓ HTTP/JWT
-Backend (Node.js + Express)
-    ↓ TCP
-Database (PostgreSQL)
-```
+### Tic Tac Toe — Minimax + Alpha-Beta
+Full game tree search with pruning. Explores every possible outcome and always picks the optimal move. Never loses.
+
+### Number Target — Nim Game Theory
+Forces the opponent into losing positions using `(100 - current) % 11 === 0`. One mathematical formula, zero chance of winning.
+
+### Connect Four — Minimax Depth-6
+Looks 6 moves ahead with heuristic board evaluation and center-column move ordering. Extremely hard to beat.
+
+### Memory Match — Perfect Memory
+Records every card seen by either player. Always picks a known matching pair when available, never forgets.
+
+### Rock Paper Scissors — Pattern Detection
+Tracks move frequency over the full game and recent history. Counters your most-used move after round 3.
+
+### Reversi — Minimax + Positional Weights
+Depth-4 minimax on a 6×6 board with a positional weight table that values corners (100pts) and punishes edge traps.
 
 ## 📊 Database Schema
 
-- **users** - Accounts with ratings
-- **game_records** - Individual game results
-- **leaderboards** - Aggregated stats per user
-- **analytics** - Event tracking (optional)
-
-## 🎯 AI Algorithms
-
-### Tic Tac Toe: Minimax
-- Full game tree search
-- Alpha-beta pruning for speed
-- Result: Never loses
-
-### Number Target: Game Theory
-- Mathematical Nim strategy
-- Forcing positions: (100 - pos) % 11 === 0
-- Result: Mathematically unbeatable
-
-### Connect Four: Minimax Depth-6
-- Look 6 moves ahead
-- Heuristic board evaluation
-- Optimized move ordering
-- Result: Can't beat it
-
-## 📁 Project Structure
-
-```
-backend/
-├── config/       # Database
-├── routes/       # APIs
-├── middleware/   # Auth, errors
-├── migrations/   # SQL schemas
-└── server.js
-
-src/
-├── games/        # Game components
-├── screens/      # Auth screen
-├── api/          # API client
-├── context/      # State management
-├── utils/        # Helpers
-└── App.jsx
-```
+| Table | Purpose |
+|-------|---------|
+| `users` | Accounts, ratings, win/loss/draw totals |
+| `game_records` | Individual game results with scores & duration |
+| `leaderboards` | One row per user, ratings for all 6 games |
+| `analytics` | Optional event tracking |
 
 ## 🔐 Security
 
-- JWT tokens (30 day expiry)
-- bcryptjs password hashing
-- SQL parameter binding
-- CORS protection
-- Input validation
+- Passwords hashed with bcryptjs (10 rounds)
+- JWT tokens with 30-day expiry
+- Parameterized queries (no SQL injection)
+- CORS restricted to configured frontend URL
+- Input validation on all endpoints
 
 ## 📈 Performance
 
-- Frontend: <2s load time (51KB gzipped)
-- AI Response: ~300-450ms (< 500ms target)
-- API: ~50ms latency
-- Database: Optimized indexes
+| Metric | Target | Actual |
+|--------|--------|--------|
+| Frontend bundle | < 100 KB gzipped | ~55 KB |
+| API response | < 100 ms | ~50 ms |
+| AI response | < 500 ms | 300–450 ms |
+| Load time | < 2 s | < 2 s |
 
-## 🚢 Deploy
+## 🚢 Deployment
 
-**Frontend**: Deploy `dist/` to Vercel  
-**Backend**: Deploy to Railway/Render  
-**Database**: Use Neon or AWS RDS  
-
-Set environment variables on hosting platform.
-
-## 📝 Commit & Push
-
+**Frontend → Vercel**
 ```bash
-git add .
-git commit -m "Stage 2: Professional MVP - All systems operational"
-git push origin master
+# Set in Vercel dashboard:
+VITE_API_URL=https://your-backend.railway.app/api
 ```
 
-## 📋 Software Requirements Specification (SRS)
+**Backend → Railway**
+```bash
+# Set in Railway dashboard:
+DATABASE_URL=postgresql://...   # linked automatically from Postgres service
+JWT_SECRET=<32+ char secret>
+NODE_ENV=production
+FRONTEND_URL=https://your-app.vercel.app
+PORT=5000
+```
+
+**Start command (Railway):**
+```
+npm run migrate && npm start
+```
+
+GitHub Actions automatically deploys on every push to `master` when `VERCEL_TOKEN` and `RAILWAY_TOKEN` secrets are configured.
+
+## 📋 Software Requirements
 
 ### Functional Requirements
 
 | ID | Requirement | Status |
-|---|---|---|
-| FR1 | User Registration & Login | ✅ Complete |
-| FR2 | Guest Login (no account needed) | ✅ Complete |
-| FR3 | Play Tic Tac Toe vs Minimax AI | ✅ Complete |
-| FR4 | Play Number Target vs Game Theory AI | ✅ Complete |
-| FR5 | Play Connect Four vs Minimax AI | ✅ Complete |
-| FR6 | Auto-save game results to database | ✅ Complete |
-| FR7 | View personal game statistics | ✅ Complete |
-| FR8 | View game history (last 50 games) | ✅ Complete |
-| FR9 | Global leaderboard (all users) | ✅ Complete |
-| FR10 | Per-game leaderboards | ✅ Complete |
-| FR11 | User rank display in each game | ✅ Complete |
-| FR12 | JWT token persistence across sessions | ✅ Complete |
-| FR13 | Real-time AI response (< 500ms) | ✅ Complete |
+|----|-------------|--------|
+| FR1 | User registration & login | ✅ |
+| FR2 | Guest login (no account needed) | ✅ |
+| FR3 | Tic Tac Toe vs Minimax AI | ✅ |
+| FR4 | Number Target vs Nim AI | ✅ |
+| FR5 | Connect Four vs Minimax AI | ✅ |
+| FR6 | Memory Match vs perfect memory AI | ✅ |
+| FR7 | Rock Paper Scissors vs pattern AI | ✅ |
+| FR8 | Reversi vs positional AI | ✅ |
+| FR9 | Auto-save game results | ✅ |
+| FR10 | Personal stats & game history | ✅ |
+| FR11 | Global & per-game leaderboards | ✅ |
+| FR12 | JWT persistence across sessions | ✅ |
 
 ### Non-Functional Requirements
 
 | ID | Requirement | Target | Status |
-|---|---|---|---|
-| NFR1 | API Response Time | < 100ms | ✅ ~50ms |
-| NFR2 | AI Response Time | < 500ms | ✅ ~300-450ms |
-| NFR3 | Frontend Bundle Size | < 100KB gzipped | ✅ ~51KB |
-| NFR4 | Database Connection Timeout | 5s | ✅ Configured |
-| NFR5 | Automatic Retry Logic | 3 attempts | ✅ Implemented |
-| NFR6 | Token Expiry | 30 days | ✅ Configured |
-| NFR7 | Password Hashing | bcryptjs 10 rounds | ✅ Implemented |
-| NFR8 | SQL Injection Prevention | Parameterized queries | ✅ Implemented |
-| NFR9 | CORS Protection | Origin-based | ✅ Configured |
-| NFR10 | Database Indexes | On hot queries | ✅ Optimized |
-| NFR11 | Error Handling | Global middleware | ✅ Complete |
-| NFR12 | Environment Validation | On startup | ✅ Complete |
-
-### Algorithm Implementations
-
-| Game | Algorithm | Time Complexity | Unbeatable |
-|---|---|---|---|
-| **Tic Tac Toe** | Minimax + Alpha-Beta Pruning | O(b^d) ≈ O(1) | 100% |
-| **Number Target** | Nim Game Theory | O(1) | 100% Mathematically |
-| **Connect Four** | Minimax Depth-6 | O(7^6) ≈ 118K nodes | 99.9% |
-
-## 📞 Troubleshooting
-
-See [SETUP_GUIDE.md](./SETUP_GUIDE.md) for detailed help.
-
-Common issues:
-- **Port already in use**: Change PORT in `.env`
-- **Database connection refused**: Verify PostgreSQL is running
-- **Token not persisting**: Check localStorage in browser DevTools
-- **AI takes too long**: Check NODE_ENV is not 'development' in production
+|----|-------------|--------|--------|
+| NFR1 | API response time | < 100 ms | ✅ ~50 ms |
+| NFR2 | AI response time | < 500 ms | ✅ 300–450 ms |
+| NFR3 | Bundle size | < 100 KB gzipped | ✅ ~55 KB |
+| NFR4 | Retry logic | 3 attempts + backoff | ✅ |
+| NFR5 | Token expiry | 30 days | ✅ |
+| NFR6 | Password hashing | bcryptjs 10 rounds | ✅ |
+| NFR7 | SQL injection prevention | Parameterized queries | ✅ |
+| NFR8 | CORS protection | Origin-based | ✅ |
 
 ---
 
-**⚡ Build with perfect AI. Play if you dare.**
+**⚡ Six games. Six algorithms. Zero chance of winning.**
