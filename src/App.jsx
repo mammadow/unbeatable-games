@@ -1,4 +1,10 @@
 import { useState, useEffect } from "react";
+import TicTacToeGame from "./games/TicTacToeGame";
+import NumberTargetGame from "./games/NumberTargetGame";
+import ConnectFourGame from "./games/ConnectFourGame";
+import MemoryMatchGame from "./games/MemoryMatchGame";
+import RockPaperScissorsGame from "./games/RockPaperScissorsGame";
+import ReversiGame from "./games/ReversiGame";
 
 const games = [
   {
@@ -18,146 +24,44 @@ const games = [
     icon: "◉",
     title: "Connect Four",
     color: "#ef7768"
+  },
+  {
+    id: "memory-match",
+    icon: "▣",
+    title: "Memory Match",
+    color: "#b58cff"
+  },
+  {
+    id: "rock-paper-scissors",
+    icon: "✊",
+    title: "Rock Paper Scissors",
+    color: "#88d0ff"
+  },
+  {
+    id: "reversi",
+    icon: "◍",
+    title: "Reversi",
+    color: "#9ee493"
   }
 ];
 
-function TicTacToeBoard({ interactive }) {
-  const [cells, setCells] = useState(["X", "O", "X", "O", "X", "", "O", "", ""]);
-  const [highlight, setHighlight] = useState([0, 4, 8]);
-
-  useEffect(() => {
-    if (!interactive) return;
-    const interval = setInterval(() => {
-      const patterns = [
-        { cells: ["X", "O", "X", "O", "X", "", "O", "", ""], win: [0, 4, 8] },
-        { cells: ["O", "X", "O", "X", "X", "X", "", "O", ""], win: [3, 4, 5] },
-        { cells: ["X", "", "O", "X", "O", "", "X", "O", ""], win: [0, 3, 6] },
-      ];
-      const random = patterns[Math.floor(Math.random() * patterns.length)];
-      setCells(random.cells);
-      setHighlight(random.win);
-    }, 2500);
-    return () => clearInterval(interval);
-  }, [interactive]);
-
-  return (
-    <div className="game-board ttt-board">
-      {cells.map((cell, i) => (
-        <div
-          key={i}
-          className={`ttt-cell ${highlight.includes(i) ? "win" : ""} ${cell === "X" ? "x" : cell === "O" ? "o" : ""}`}
-        >
-          {cell}
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function NumberTargetBoard({ interactive }) {
-  const [current, setCurrent] = useState(89);
-  const [adding, setAdding] = useState(null);
-
-  useEffect(() => {
-    if (!interactive) return;
-    const interval = setInterval(() => {
-      const add = Math.floor(Math.random() * 10) + 1;
-      setAdding(add);
-      setTimeout(() => {
-        setCurrent(prev => {
-          const next = prev + add;
-          return next >= 100 ? Math.floor(Math.random() * 30) + 50 : next;
-        });
-        setAdding(null);
-      }, 600);
-    }, 2000);
-    return () => clearInterval(interval);
-  }, [interactive]);
-
-  return (
-    <div className="game-board number-board">
-      <div className="number-display">
-        <span className="current-num">{current}</span>
-        <span className="target-num">/100</span>
-        {adding && <span className="adding-num">+{adding}</span>}
-      </div>
-      <div className="number-pills">
-        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => (
-          <span key={n} className={`pill ${adding === n ? "active" : ""}`}>
-            {n}
-          </span>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function ConnectFourBoard({ interactive }) {
-  const [discs, setDiscs] = useState(() => {
-    const initial = Array(42).fill(null);
-    [35, 36, 37, 38, 28, 29, 30, 21, 22, 14].forEach((i, idx) => {
-      initial[i] = idx % 2 === 0 ? "red" : "yellow";
-    });
-    return initial;
-  });
-  const [falling, setFalling] = useState(null);
-
-  useEffect(() => {
-    if (!interactive) return;
-    const interval = setInterval(() => {
-      const emptyCols = [];
-      for (let col = 0; col < 7; col++) {
-        for (let row = 5; row >= 0; row--) {
-          if (!discs[row * 7 + col]) {
-            emptyCols.push({ col, row, idx: row * 7 + col });
-            break;
-          }
-        }
-      }
-      if (emptyCols.length > 0) {
-        const target = emptyCols[Math.floor(Math.random() * emptyCols.length)];
-        setFalling({ col: target.col, color: Math.random() > 0.5 ? "red" : "yellow" });
-        setTimeout(() => {
-          setDiscs(prev => {
-            const next = [...prev];
-            next[target.idx] = falling?.color || "red";
-            return next;
-          });
-          setFalling(null);
-        }, 500);
-      } else {
-        setDiscs(() => {
-          const reset = Array(42).fill(null);
-          [35, 36, 37].forEach((i, idx) => {
-            reset[i] = idx % 2 === 0 ? "red" : "yellow";
-          });
-          return reset;
-        });
-      }
-    }, 1500);
-    return () => clearInterval(interval);
-  }, [interactive, discs, falling]);
-
-  return (
-    <div className="game-board c4-board">
-      {falling && (
-        <div
-          className={`falling-disc ${falling.color}`}
-          style={{ left: `${falling.col * 14.28}%` }}
-        />
-      )}
-      {discs.map((disc, i) => (
-        <div key={i} className="c4-slot">
-          {disc && <span className={`c4-disc ${disc}`} />}
-        </div>
-      ))}
-    </div>
-  );
-}
-
 function App() {
   const [activeGame, setActiveGame] = useState("tictactoe");
+  const [theme, setTheme] = useState("dark");
   const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("theme") || "dark";
+    setTheme(savedTheme);
+    document.documentElement.setAttribute("data-theme", savedTheme);
+  }, []);
+
+  const toggleTheme = () => {
+    const newTheme = theme === "dark" ? "light" : "dark";
+    setTheme(newTheme);
+    localStorage.setItem("theme", newTheme);
+    document.documentElement.setAttribute("data-theme", newTheme);
+  };
 
   const handleMouseMove = (e) => {
     const x = (e.clientX / window.innerWidth) * 100;
@@ -188,19 +92,24 @@ function App() {
           <span className="logo-icon">⚡</span>
           <span className="logo-text">Unbeatable</span>
         </div>
-        <nav className="nav">
-          {games.map(g => (
-            <button
-              key={g.id}
-              className={`nav-btn ${activeGame === g.id ? "active" : ""}`}
-              onClick={() => setActiveGame(g.id)}
-              style={{ "--accent": g.color }}
-            >
-              <span className="nav-icon">{g.icon}</span>
-              <span className="nav-label">{g.title}</span>
-            </button>
-          ))}
-        </nav>
+        <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
+          <nav className="nav">
+            {games.map(g => (
+              <button
+                key={g.id}
+                className={`nav-btn ${activeGame === g.id ? "active" : ""}`}
+                onClick={() => setActiveGame(g.id)}
+                style={{ "--accent": g.color }}
+              >
+                <span className="nav-icon">{g.icon}</span>
+                <span className="nav-label">{g.title}</span>
+              </button>
+            ))}
+          </nav>
+          <button className="theme-toggle" onClick={toggleTheme} title={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}>
+            <span className="theme-toggle-icon">{theme === "dark" ? "🌙" : "☀️"}</span>
+          </button>
+        </div>
       </header>
 
       <main className="main">
@@ -215,40 +124,28 @@ function App() {
         </section>
 
         <section className="game-showcase">
-          <div className={`game-container ${activeGame}`}>
-            {activeGame === "tictactoe" && <TicTacToeBoard interactive />}
-            {activeGame === "number-target" && <NumberTargetBoard interactive />}
-            {activeGame === "connect-four" && <ConnectFourBoard interactive />}
-          </div>
-
-          <div className="game-cards">
-            {games.map(g => (
-              <button
-                key={g.id}
-                className={`game-card ${activeGame === g.id ? "active" : ""}`}
-                onClick={() => setActiveGame(g.id)}
-                style={{ "--accent": g.color }}
-              >
-                <span className="card-icon">{g.icon}</span>
-                <span className="card-title">{g.title}</span>
-                <span className="card-glow" />
-              </button>
-            ))}
+          <div className={`game-showcase-content ${activeGame}`}>
+            {activeGame === "tictactoe" && <TicTacToeGame />}
+            {activeGame === "number-target" && <NumberTargetGame />}
+            {activeGame === "connect-four" && <ConnectFourGame />}
+            {activeGame === "memory-match" && <MemoryMatchGame />}
+            {activeGame === "rock-paper-scissors" && <RockPaperScissorsGame />}
+            {activeGame === "reversi" && <ReversiGame />}
           </div>
         </section>
 
         <section className="features">
           <div className="feature">
             <span className="feature-icon">🧠</span>
-            <span className="feature-text">Minimax AI</span>
+            <span className="feature-text">Advanced AI</span>
           </div>
           <div className="feature">
             <span className="feature-icon">⚡</span>
-            <span className="feature-text">Instant Response</span>
+            <span className="feature-text">Multiple Difficulties</span>
           </div>
           <div className="feature">
             <span className="feature-icon">🎯</span>
-            <span className="feature-text">Optimal Strategy</span>
+            <span className="feature-text">Strategic Gameplay</span>
           </div>
         </section>
       </main>
