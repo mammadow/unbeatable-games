@@ -1,0 +1,34 @@
+# 🤝 Komanda Məsuliyətləri
+
+# Frontend UI
+src/screens/         @elnur
+src/context/         @elnur
+src/App.jsx          @elnur
+src/styles.css       @elnur
+
+# AI Games
+src/games/TicTacToe.jsx       @mahammad
+src/games/ConnectFour.jsx     @haci
+src/games/NumberTarget.jsx    @haci
+
+# Backend
+backend/server.js             @mahammad @elnur
+backend/routes/auth.js        @mahammad
+backend/routes/games.js       @mahammad
+backend/routes/leaderboard.js @mahammad
+backend/config/               @mahammad
+backend/migrations/           @mahammad
+
+# Api Client
+src/api/               @elnur @mahammad
+
+# Docs
+README.md              @elnur
+SETUP_GUIDE.md         @elnur
+TEAM_WORKFLOW.md       @elnur
+DEPLOYMENT_SETUP.md    @elnur
+
+# Root configs
+package.json           @elnur @mahammad
+vercel.json            @elnur
+backend/railway.json   @mahammad
