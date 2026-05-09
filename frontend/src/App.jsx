@@ -15,6 +15,7 @@ const GAMES = [
     title: "Tic Tac Toe",
     color: "#FFD700",
     algo: "Minimax + Alpha-Beta",
+    difficulty: "Unbeatable",
     desc: "Classic 3×3 grid. The AI plays perfectly — a draw is the best you can do.",
   },
   {
@@ -23,6 +24,7 @@ const GAMES = [
     title: "Number Target",
     color: "#00D4FF",
     algo: "Game Theory (Nim)",
+    difficulty: "Unbeatable",
     desc: "Take turns adding 1–10. First to reach 100 wins. The math is against you.",
   },
   {
@@ -31,6 +33,7 @@ const GAMES = [
     title: "Connect Four",
     color: "#FF3838",
     algo: "Minimax depth-6",
+    difficulty: "Expert",
     desc: "Drop discs and connect four in a row. The AI looks 6 moves ahead.",
   },
   {
@@ -39,6 +42,7 @@ const GAMES = [
     title: "Memory Match",
     color: "#9B59FF",
     algo: "Perfect Memory",
+    difficulty: "Perfect Memory",
     desc: "Flip cards and find pairs. The AI never forgets a single card it has seen.",
   },
   {
@@ -47,6 +51,7 @@ const GAMES = [
     title: "Rock Paper Scissors",
     color: "#FF9900",
     algo: "Pattern Detection",
+    difficulty: "Adaptive",
     desc: "Best of 7. The AI studies your move history and counters your patterns.",
   },
   {
@@ -55,6 +60,7 @@ const GAMES = [
     title: "Reversi",
     color: "#00FF87",
     algo: "Minimax + Position",
+    difficulty: "Expert",
     desc: "Flip your opponent's discs on a 6×6 board. AI values corners above all else.",
   },
 ];
@@ -145,10 +151,31 @@ function AppContent() {
             <span className="title-line">Play Against</span>
             <span className="title-line accent">Perfect AI</span>
           </h1>
-          <p className="subtitle">Udulmaz alqoritmlərlə gücləndirilmiş mini oyunlar</p>
+          <p className="subtitle">Challenge unbeatable algorithms across 6 classic games</p>
+
+          <div className="hero-stats">
+            <div className="hero-stat">
+              <span className="hero-stat-num">6</span>
+              <span className="hero-stat-label">Games</span>
+            </div>
+            <div className="hero-stat">
+              <span className="hero-stat-num">4</span>
+              <span className="hero-stat-label">AI Algorithms</span>
+            </div>
+            <div className="hero-stat">
+              <span className="hero-stat-num">100%</span>
+              <span className="hero-stat-label">Fair Play</span>
+            </div>
+          </div>
+
+          <button className="hero-cta" onClick={() => {
+            document.getElementById("game-grid")?.scrollIntoView({ behavior: "smooth" });
+          }}>
+            Start Playing
+          </button>
         </section>
 
-        <div className="home-grid">
+        <div className="home-grid" id="game-grid">
           {GAMES.map((g) => (
             <button
               key={g.id}
@@ -158,6 +185,7 @@ function AppContent() {
             >
               <div className="home-card-banner">
                 <span className="home-card-icon">{g.icon}</span>
+                <span className="home-card-difficulty" style={{ borderColor: g.color, color: g.color }}>{g.difficulty}</span>
               </div>
               <div className="home-card-body">
                 <span className="home-card-title">{g.title}</span>
@@ -170,24 +198,59 @@ function AppContent() {
           ))}
         </div>
 
-        <div className="features">
-          <div className="feature">
-            <span className="feature-icon">🧠</span>
-            <span className="feature-text">Minimax AI</span>
+        <section className="features-section">
+          <h2 className="features-heading">Why Play Against AI?</h2>
+          <div className="features-grid">
+            <div className="feature-card">
+              <span className="feature-card-icon">🧠</span>
+              <span className="feature-card-title">Minimax AI</span>
+              <p className="feature-card-desc">Algorithms that calculate the mathematically optimal move</p>
+            </div>
+            <div className="feature-card">
+              <span className="feature-card-icon">⚡</span>
+              <span className="feature-card-title">Instant Response</span>
+              <p className="feature-card-desc">Zero delay — every move computed in real-time</p>
+            </div>
+            <div className="feature-card">
+              <span className="feature-card-icon">🎯</span>
+              <span className="feature-card-title">Optimal Strategy</span>
+              <p className="feature-card-desc">Learn perfect play by competing against perfection</p>
+            </div>
+            <div className="feature-card">
+              <span className="feature-card-icon">📊</span>
+              <span className="feature-card-title">Track Progress</span>
+              <p className="feature-card-desc">Your game history and stats are saved automatically</p>
+            </div>
           </div>
-          <div className="feature">
-            <span className="feature-icon">⚡</span>
-            <span className="feature-text">Instant Response</span>
+        </section>
+
+        <section className="how-it-works">
+          <h2 className="features-heading">How It Works</h2>
+          <div className="how-steps">
+            <div className="how-step">
+              <span className="how-step-num">1</span>
+              <span className="how-step-title">Pick a Game</span>
+              <p className="how-step-desc">Choose from 6 classic strategy games above</p>
+            </div>
+            <div className="how-step-line" />
+            <div className="how-step">
+              <span className="how-step-num">2</span>
+              <span className="how-step-title">Challenge the AI</span>
+              <p className="how-step-desc">Each game uses a different unbeatable algorithm</p>
+            </div>
+            <div className="how-step-line" />
+            <div className="how-step">
+              <span className="how-step-num">3</span>
+              <span className="how-step-title">Learn & Improve</span>
+              <p className="how-step-desc">Study the AI's moves and sharpen your strategy</p>
+            </div>
           </div>
-          <div className="feature">
-            <span className="feature-icon">🎯</span>
-            <span className="feature-text">Optimal Strategy</span>
-          </div>
-        </div>
+        </section>
       </main>
 
       <footer className="footer">
         <span>Capstone Project • 2026</span>
+        <span className="footer-tech">Built with React + Vite</span>
       </footer>
     </div>
   );

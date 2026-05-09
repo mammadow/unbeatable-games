@@ -1,10 +1,13 @@
 import { useState, useEffect } from "react";
 import api from "../api/client.js";
 import { useAuth } from "../context/AuthContext.jsx";
+import GameTips from "../components/GameTips.jsx";
+import { GAME_TIPS } from "../data/gameTipsData.js";
+import { useTutorial } from "../hooks/useTutorial.js";
+import TutorialOverlay from "../components/TutorialOverlay.jsx";
 
 const ROWS = 6;
 const COLS = 7;
-// Search center columns first for better alpha-beta pruning
 const MOVE_ORDER = [3, 2, 4, 1, 5, 0, 6];
 
 function createBoard() {
@@ -52,21 +55,16 @@ function scoreWindow(win, ai, opp) {
 function evaluate(board) {
   const ai = "R", opp = "Y";
   let score = 0;
-  // Center column preference
   score += board.map(r => r[3]).filter(c => c === ai).length * 3;
-  // Horizontal windows
   for (let r = 0; r < ROWS; r++)
     for (let c = 0; c <= COLS - 4; c++)
       score += scoreWindow([board[r][c], board[r][c+1], board[r][c+2], board[r][c+3]], ai, opp);
-  // Vertical windows
   for (let c = 0; c < COLS; c++)
     for (let r = 0; r <= ROWS - 4; r++)
       score += scoreWindow([board[r][c], board[r+1][c], board[r+2][c], board[r+3][c]], ai, opp);
-  // Diagonal \ windows
   for (let r = 0; r <= ROWS - 4; r++)
     for (let c = 0; c <= COLS - 4; c++)
       score += scoreWindow([board[r][c], board[r+1][c+1], board[r+2][c+2], board[r+3][c+3]], ai, opp);
-  // Diagonal / windows
   for (let r = 3; r < ROWS; r++)
     for (let c = 0; c <= COLS - 4; c++)
       score += scoreWindow([board[r][c], board[r-1][c+1], board[r-2][c+2], board[r-3][c+3]], ai, opp);
@@ -81,10 +79,8 @@ function minimax(board, depth, alpha, beta, maximizing) {
   if (checkWin(board, "R")) return { score: 1000 + depth };
   if (checkWin(board, "Y")) return { score: -(1000 + depth) };
   if (isFull(board) || depth === 0) return { score: evaluate(board) };
-
   const valid = getValidCols(board);
   let best = { score: maximizing ? -Infinity : Infinity, col: valid[0] };
-
   for (const col of valid) {
     const drop = dropDisc(board, col, maximizing ? "R" : "Y");
     if (!drop) continue;
@@ -111,10 +107,13 @@ export default function ConnectFour({ onBack }) {
   const [result, setResult] = useState(null);
   const [thinking, setThinking] = useState(false);
   const [hoverCol, setHoverCol] = useState(null);
+  const [showTips, setShowTips] = useState(false);
   const [startTime] = useState(Date.now());
   const [saving, setSaving] = useState(false);
+  const tutorial = useTutorial("connect-four");
 
   useEffect(() => {
+    if (tutorial.active) return;
     if (playerTurn || result) return;
     setThinking(true);
     const t = setTimeout(() => {
@@ -133,6 +132,32 @@ export default function ConnectFour({ onBack }) {
 
   function handleColClick(col) {
     if (!playerTurn || result || thinking || board[0][col]) return;
+
+    if (tutorial.active) {
+      if (col !== tutorial.highlightMove) return;
+      const drop = dropDisc(board, col, "Y");
+      if (!drop) return;
+      setBoard(drop.board);
+      if (checkWin(drop.board, "Y")) { setResult("Y"); tutorial.advance(); return; }
+      if (isFull(drop.board)) { setResult("draw"); tutorial.advance(); return; }
+      if (tutorial.aiMove !== null) {
+        setPlayerTurn(false);
+        setTimeout(() => {
+          const aiDrop = dropDisc(drop.board, tutorial.aiMove, "R");
+          if (aiDrop) {
+            setBoard(aiDrop.board);
+            if (checkWin(aiDrop.board, "R")) setResult("R");
+            else if (isFull(aiDrop.board)) setResult("draw");
+            else setPlayerTurn(true);
+          }
+          tutorial.advance();
+        }, 500);
+      } else {
+        tutorial.advance();
+      }
+      return;
+    }
+
     const drop = dropDisc(board, col, "Y");
     if (drop) {
       setBoard(drop.board);
@@ -150,6 +175,9 @@ export default function ConnectFour({ onBack }) {
     setHoverCol(null);
   }
 
+  function handleStartTutorial() { reset(); tutorial.start(); }
+  function handleExitTutorial() { tutorial.exit(); reset(); }
+
   async function saveGame() {
     if (!user || !result || saving) return;
     setSaving(true);
@@ -163,19 +191,17 @@ export default function ConnectFour({ onBack }) {
   }
 
   useEffect(() => {
-    if (result) {
-      saveGame();
-    }
+    if (result && !tutorial.active) saveGame();
   }, [result]);
 
   const status = result
-    ? result === "draw" ? "It's a Draw!" : result === "Y" ? "You Win! 🎉" : "AI Wins!"
+    ? result === "draw" ? "It's a Draw!" : result === "Y" ? "You Win!" : "AI Wins!"
     : thinking ? "AI is thinking..." : playerTurn ? "Your turn  (Yellow)" : "AI's turn  (Red)";
 
-  const canHover = playerTurn && !result && !thinking;
+  const canHover = playerTurn && !result && !thinking && !tutorial.active;
 
   return (
-    <div className="app">
+    <div className={`app ${tutorial.active ? "tutorial-active" : ""}`}>
       <header className="header">
         <div className="logo">
           <span className="logo-icon">⚡</span>
@@ -184,21 +210,33 @@ export default function ConnectFour({ onBack }) {
         <button className="back-btn" onClick={onBack}>← Back</button>
       </header>
       <main className="main">
-        <h2 className="game-title" style={{ color: "var(--red)" }}>Connect Four</h2>
+        <div className="game-title-row">
+          <h2 className="game-title" style={{ color: "var(--red)" }}>Connect Four</h2>
+          <button className="tips-toggle" onClick={() => setShowTips(t => !t)}>{showTips ? "✕" : "?"}</button>
+          <button className="tutorial-toggle" onClick={tutorial.active ? handleExitTutorial : handleStartTutorial}>
+            {tutorial.active ? "Exit Tutorial" : "Tutorial"}
+          </button>
+        </div>
+        <GameTips {...GAME_TIPS["connect-four"]} isOpen={showTips} />
+        {tutorial.active && (
+          <TutorialOverlay
+            text={tutorial.text}
+            stepIndex={tutorial.stepIndex}
+            totalSteps={tutorial.totalSteps}
+            isComplete={tutorial.isComplete}
+            onExit={handleExitTutorial}
+          />
+        )}
         <p className={`game-status ${result ? (result === "Y" ? "status-win" : result === "draw" ? "status-draw" : "status-lose") : ""}`}>
           {status}
         </p>
 
-        <div
-          className="c4-wrapper"
-          onMouseLeave={() => setHoverCol(null)}
-        >
-          {/* Ghost disc indicator row */}
+        <div className="c4-wrapper" onMouseLeave={() => setHoverCol(null)}>
           <div className="c4-indicator-row">
             {Array.from({ length: COLS }, (_, c) => (
               <div
                 key={c}
-                className="c4-indicator-cell"
+                className={`c4-indicator-cell ${tutorial.active && tutorial.highlightMove === c && !board[0][c] ? "tutorial-highlight" : ""}`}
                 onMouseEnter={() => canHover && setHoverCol(c)}
                 onClick={() => handleColClick(c)}
               >
@@ -209,11 +247,7 @@ export default function ConnectFour({ onBack }) {
             ))}
           </div>
 
-          {/* Board */}
-          <div
-            className="c4-board-play"
-            onMouseLeave={() => setHoverCol(null)}
-          >
+          <div className="c4-board-play" onMouseLeave={() => setHoverCol(null)}>
             {board.map((row, r) =>
               row.map((disc, c) => (
                 <div
@@ -231,7 +265,7 @@ export default function ConnectFour({ onBack }) {
           </div>
         </div>
 
-        {result && (
+        {result && !tutorial.active && (
           <button className="reset-btn" onClick={reset} disabled={saving}>
             {saving ? "Saving..." : "Play Again"}
           </button>

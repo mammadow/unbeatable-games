@@ -1,6 +1,10 @@
 import { useState, useEffect } from "react";
 import api from "../api/client.js";
 import { useAuth } from "../context/AuthContext.jsx";
+import GameTips from "../components/GameTips.jsx";
+import { GAME_TIPS } from "../data/gameTipsData.js";
+import { useTutorial } from "../hooks/useTutorial.js";
+import TutorialOverlay from "../components/TutorialOverlay.jsx";
 
 const WIN_LINES = [
   [0,1,2],[3,4,5],[6,7,8],
@@ -73,10 +77,13 @@ export default function TicTacToe({ onBack }) {
   const [result, setResult] = useState(null);
   const [winLine, setWinLine] = useState([]);
   const [thinking, setThinking] = useState(false);
+  const [showTips, setShowTips] = useState(false);
   const [startTime] = useState(Date.now());
   const [saving, setSaving] = useState(false);
+  const tutorial = useTutorial("tictactoe");
 
   useEffect(() => {
+    if (tutorial.active) return;
     if (playerTurn || result) return;
     setThinking(true);
     const t = setTimeout(() => {
@@ -96,6 +103,31 @@ export default function TicTacToe({ onBack }) {
 
   function handleClick(i) {
     if (!playerTurn || board[i] || result || thinking) return;
+
+    if (tutorial.active) {
+      if (i !== tutorial.highlightMove) return;
+      const nb = [...board];
+      nb[i] = "X";
+      setBoard(nb);
+      const r = checkResult(nb);
+      if (r) { setResult(r.winner); setWinLine(r.line); tutorial.advance(); return; }
+      if (tutorial.aiMove !== null) {
+        setPlayerTurn(false);
+        setTimeout(() => {
+          const nb2 = [...nb];
+          nb2[tutorial.aiMove] = "O";
+          setBoard(nb2);
+          const r2 = checkResult(nb2);
+          if (r2) { setResult(r2.winner); setWinLine(r2.line); }
+          else setPlayerTurn(true);
+          tutorial.advance();
+        }, 500);
+      } else {
+        tutorial.advance();
+      }
+      return;
+    }
+
     const nb = [...board];
     nb[i] = "X";
     setBoard(nb);
@@ -124,18 +156,28 @@ export default function TicTacToe({ onBack }) {
     setThinking(false);
   }
 
+  function handleStartTutorial() {
+    reset();
+    tutorial.start();
+  }
+
+  function handleExitTutorial() {
+    tutorial.exit();
+    reset();
+  }
+
   const status = result
-    ? result === "draw" ? "It's a Draw!" : result === "X" ? "You Win! 🎉" : "AI Wins!"
+    ? result === "draw" ? "It's a Draw!" : result === "X" ? "You Win!" : "AI Wins!"
     : thinking ? "AI is thinking..." : playerTurn ? "Your turn  (X)" : "AI's turn  (O)";
 
   useEffect(() => {
-    if (result) {
+    if (result && !tutorial.active) {
       saveGame();
     }
   }, [result]);
 
   return (
-    <div className="app">
+    <div className={`app ${tutorial.active ? "tutorial-active" : ""}`}>
       <header className="header">
         <div className="logo">
           <span className="logo-icon">⚡</span>
@@ -144,7 +186,23 @@ export default function TicTacToe({ onBack }) {
         <button className="back-btn" onClick={onBack}>← Back</button>
       </header>
       <main className="main">
-        <h2 className="game-title" style={{ color: "var(--gold)" }}>Tic Tac Toe</h2>
+        <div className="game-title-row">
+          <h2 className="game-title" style={{ color: "var(--gold)" }}>Tic Tac Toe</h2>
+          <button className="tips-toggle" onClick={() => setShowTips(t => !t)}>{showTips ? "✕" : "?"}</button>
+          <button className="tutorial-toggle" onClick={tutorial.active ? handleExitTutorial : handleStartTutorial}>
+            {tutorial.active ? "Exit Tutorial" : "Tutorial"}
+          </button>
+        </div>
+        <GameTips {...GAME_TIPS.tictactoe} isOpen={showTips} />
+        {tutorial.active && (
+          <TutorialOverlay
+            text={tutorial.text}
+            stepIndex={tutorial.stepIndex}
+            totalSteps={tutorial.totalSteps}
+            isComplete={tutorial.isComplete}
+            onExit={handleExitTutorial}
+          />
+        )}
         <p className={`game-status ${result ? (result === "X" ? "status-win" : result === "draw" ? "status-draw" : "status-lose") : ""}`}>
           {status}
         </p>
@@ -157,6 +215,7 @@ export default function TicTacToe({ onBack }) {
                 cell === "X" ? "x" : cell === "O" ? "o" : "",
                 winLine.includes(i) ? "win" : "",
                 !cell && playerTurn && !result && !thinking ? "clickable" : "",
+                tutorial.active && tutorial.highlightMove === i && !cell ? "tutorial-highlight" : "",
               ].join(" ")}
               onClick={() => handleClick(i)}
             >
@@ -164,7 +223,7 @@ export default function TicTacToe({ onBack }) {
             </button>
           ))}
         </div>
-        {result && (
+        {result && !tutorial.active && (
           <button className="reset-btn" onClick={reset} disabled={saving}>
             {saving ? "Saving..." : "Play Again"}
           </button>

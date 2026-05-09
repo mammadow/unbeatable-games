@@ -11,7 +11,7 @@
 
 <br />
 
-**🎯 Perfect AI** · **⚡ Instant Response** · **🏆 Leaderboards** · **💾 Save Stats**
+**🎯 Perfect AI** · **⚡ Instant Response** · **🏆 Leaderboards** · **💾 Save Stats** · **📖 Interactive Tutorials**
 
 <br />
 
@@ -35,11 +35,15 @@
 ## ✨ Features
 
 - 6 AI-powered games with distinct algorithms
+- Interactive tutorials with step-by-step guided walkthroughs for each game
+- In-game tips panel with rules, strategy hints, and AI algorithm explanations
 - JWT authentication — Email/Password & Guest login
 - Auto-save game results to database
 - Personal stats, game history, and win rates
 - Global & per-game leaderboards with rankings
-- Casino-style dark UI with neon animations
+- Redesigned split-layout auth screen with password strength indicator
+- Enhanced homepage with hero section, feature cards, and how-it-works guide
+- Casino-style dark UI with neon animations and glassmorphism effects
 - CI/CD via GitHub Actions → Vercel + Railway
 
 ## 🚀 Quick Start
@@ -87,10 +91,13 @@ unbeatable-games/
 │   ├── src/
 │   │   ├── games/          # TicTacToe, NumberTarget, ConnectFour,
 │   │   │                   # MemoryMatch, RockPaperScissors, Reversi
-│   │   ├── screens/        # AuthScreen
+│   │   ├── screens/        # AuthScreen (split-layout login/register)
 │   │   ├── context/        # AuthContext (JWT state)
+│   │   ├── components/     # GameTips, TutorialOverlay
+│   │   ├── hooks/          # useTutorial (tutorial state machine)
+│   │   ├── data/           # gameTipsData, tutorialScripts
 │   │   ├── api/            # API client with retry logic
-│   │   └── App.jsx
+│   │   └── App.jsx         # Game hub with hero, features, how-it-works
 │   └── vite.config.js
 │
 ├── backend/
@@ -100,7 +107,6 @@ unbeatable-games/
 │   ├── migrations/         # SQL schema
 │   └── server.js
 │
-├── src/                    # Earlier standalone React/game prototypes + tests
 ├── docs/                   # Capstone context and assignment document
 └── .github/workflows/      # CI build, health check, and deployment workflow
 ```
@@ -144,6 +150,27 @@ Tracks move frequency over the full game and recent history. Counters your most-
 ### Reversi — Minimax + Positional Weights
 Depth-4 minimax on a 6×6 board with a positional weight table that values corners (100pts) and punishes edge traps.
 
+## 📖 Interactive Tutorials
+
+Each game includes a guided tutorial mode accessible via a "Tutorial" button:
+
+- **Step-by-step walkthrough** with highlighted moves and explanations of optimal strategy
+- **Scripted AI responses** so the tutorial progresses predictably
+- **Pulsing gold highlights** show exactly which move to make
+- **Non-target elements are dimmed** to focus attention on the correct action
+- **Step counter** tracks progress through each tutorial
+- **Game state resets** cleanly when entering or exiting tutorial mode
+- **No stats saved** during tutorials to keep your record clean
+
+| Game | Tutorial Focus |
+|------|----------------|
+| Tic Tac Toe | Center control, corner strategy, fork creation |
+| Number Target | Multiples-of-11 pattern, response formula (11 - X) |
+| Connect Four | Center column dominance, horizontal line building |
+| Memory Match | Exploration phase, memory recall, matching known pairs |
+| Rock Paper Scissors | Move variation, pattern avoidance, AI adaptation |
+| Reversi | Center control, territory expansion, outflanking |
+
 ## 📊 Database Schema
 
 | Table | Purpose |
@@ -165,7 +192,7 @@ Depth-4 minimax on a 6×6 board with a positional weight table that values corne
 
 | Metric | Target | Actual |
 |--------|--------|--------|
-| Frontend bundle | < 100 KB gzipped | ~55 KB |
+| Frontend bundle | < 100 KB gzipped | ~63 KB |
 | API response | < 100 ms | ~50 ms |
 | AI response | < 500 ms | 300–450 ms |
 | Load time | < 2 s | < 2 s |
@@ -203,11 +230,13 @@ GitHub Actions automatically deploys on every push to `master` when `VERCEL_TOKE
 This Software Requirements Specification (SRS) defines the required behavior, interfaces, data, constraints, and quality attributes for the **Unbeatable Games Platform**. The document is intended for the capstone team, instructor/evaluator, future maintainers, and anyone deploying or testing the application.
 
 #### 1.2 Project Scope
-The system is a full-stack web platform where authenticated or guest users play six strategic mini-games against AI opponents. The frontend provides the game hub, gameplay screens, authentication screens, animations, and API communication. The backend provides authentication, JWT-protected game result recording, profile statistics, leaderboards, database access, health checks, and production deployment readiness.
+The system is a full-stack web platform where authenticated or guest users play six strategic mini-games against AI opponents. The frontend provides the game hub, gameplay screens, interactive tutorials, in-game tips with algorithm explanations, authentication screens, animations, and API communication. The backend provides authentication, JWT-protected game result recording, profile statistics, leaderboards, database access, health checks, and production deployment readiness.
 
 #### 1.3 Product Objectives
 - Demonstrate practical use of algorithms and data structures through playable games.
 - Provide AI opponents that are optimal, near-optimal, or adaptive depending on the game.
+- Offer interactive tutorials that teach players the strategy and logic behind each game.
+- Expose AI algorithm details through in-game tips panels for educational transparency.
 - Persist user identities, scores, game history, ratings, and leaderboard rankings.
 - Support local development and production deployment with clear environment configuration.
 - Present the project as a complete capstone artifact with source code, documentation, CI, and deployment configuration.
@@ -219,7 +248,7 @@ The included capstone assignment requires a real software prototype with clear a
 |------------------------|-------------------|
 | Algorithmic depth | Minimax, alpha-beta pruning, Nim-style target strategy, pattern detection, heuristic evaluation |
 | Data-structure selection | Arrays and matrices for game states, maps/sets for memory tracking, PostgreSQL tables/indexes for persistence |
-| Working prototype | Six playable browser games plus backend persistence and authentication |
+| Working prototype | Six playable browser games with interactive tutorials plus backend persistence and authentication |
 | Testing | Frontend build checks, backend syntax checks, database health checks, migration checks |
 | Performance analysis | README documents expected API, AI, bundle, and load-time targets |
 | Presentation/report readiness | README contains project overview, algorithms, architecture, deployment, and full SRS |
@@ -233,6 +262,8 @@ The included capstone assignment requires a real software prototype with clear a
 | Guest user | Automatically generated temporary account with a unique username and email |
 | Game record | One completed game result saved to PostgreSQL |
 | Leaderboard | Ranked list of users globally or by a specific game |
+| Tutorial mode | Guided walkthrough with scripted moves and AI responses for learning |
+| Tips panel | Collapsible in-game panel showing rules, strategy hints, and AI algorithm details |
 
 ### 2. Overall Description
 
@@ -241,7 +272,7 @@ The platform is organized as a separated frontend and backend:
 
 | Layer | Technology | Responsibility |
 |-------|------------|----------------|
-| Frontend | React 18 + Vite | Authentication UI, game hub, six playable games, client-side AI, API calls |
+| Frontend | React 18 + Vite | Authentication UI, game hub, six playable games, interactive tutorials, tips panels, client-side AI, API calls |
 | Backend | Node.js + Express | REST API, JWT auth, validation, result persistence, leaderboards |
 | Database | PostgreSQL | Users, game records, leaderboard ratings, analytics events |
 | CI/CD | GitHub Actions | Build checks, backend health checks, optional Vercel/Railway deployment |
@@ -249,8 +280,8 @@ The platform is organized as a separated frontend and backend:
 #### 2.2 User Classes
 | User Class | Description | Main Needs |
 |------------|-------------|------------|
-| Guest player | User who wants immediate access without registration | Start quickly, play games, record temporary stats |
-| Registered player | User with username, email, and password | Persistent identity, saved history, leaderboard progress |
+| Guest player | User who wants immediate access without registration | Start quickly, play games, learn via tutorials, record temporary stats |
+| Registered player | User with username, email, and password | Persistent identity, saved history, leaderboard progress, strategy learning |
 | Developer | Team member maintaining the project | Local setup, migrations, tests, clear source organization |
 | Evaluator | Instructor or reviewer | Understand requirements, verify implementation, run/deploy project |
 
@@ -268,6 +299,7 @@ The platform is organized as a separated frontend and backend:
 - Database queries must use parameterized SQL values for user-controlled data.
 - Protected API routes must require a valid JWT.
 - Game AI should execute quickly enough to keep gameplay interactive.
+- Tutorial scripts must use valid game moves that produce correct board states.
 - Generated build files and dependencies must not be treated as primary source code.
 
 #### 2.5 Assumptions and Dependencies
@@ -276,6 +308,7 @@ The platform is organized as a separated frontend and backend:
 - `VITE_API_URL` should point to the backend API base in deployed frontend environments.
 - Guest users are stored as normal users with generated identifiers.
 - Game result saving happens after a completed game; gameplay itself runs in the browser.
+- Tutorial mode skips game result saving to avoid polluting user statistics.
 
 ### 3. System Features and Functional Requirements
 
@@ -292,15 +325,21 @@ The platform is organized as a separated frontend and backend:
 | FR-AUTH-8 | The system shall issue a JWT after successful registration, login, or guest login. | High | Implemented |
 | FR-AUTH-9 | The frontend shall persist the JWT in local storage and restore the session on reload. | Medium | Implemented |
 | FR-AUTH-10 | The frontend shall clear local session state when the user signs out. | Medium | Implemented |
+| FR-AUTH-11 | The authentication screen shall use a split layout with branding panel and form panel. | Medium | Implemented |
+| FR-AUTH-12 | The registration form shall display a real-time password strength indicator. | Low | Implemented |
+| FR-AUTH-13 | The login and register forms shall provide a password visibility toggle. | Low | Implemented |
 
 #### 3.2 Game Hub
 | ID | Requirement | Priority | Implementation Status |
 |----|-------------|----------|-----------------------|
 | FR-HUB-1 | The system shall display a home screen after authentication. | High | Implemented |
-| FR-HUB-2 | The home screen shall show all six available games with title, icon, algorithm, and description. | High | Implemented |
+| FR-HUB-2 | The home screen shall show all six available games with title, icon, algorithm, difficulty, and description. | High | Implemented |
 | FR-HUB-3 | The user shall be able to launch each game from the home screen. | High | Implemented |
 | FR-HUB-4 | Each game screen shall provide a way to return to the home screen. | High | Implemented |
 | FR-HUB-5 | The UI shall identify the signed-in user and provide a sign-out action. | Medium | Implemented |
+| FR-HUB-6 | The home screen shall include a hero section with platform statistics and a call-to-action. | Medium | Implemented |
+| FR-HUB-7 | The home screen shall include a features section explaining the AI capabilities. | Low | Implemented |
+| FR-HUB-8 | The home screen shall include a how-it-works section with step-by-step instructions. | Low | Implemented |
 
 #### 3.3 Tic Tac Toe
 | ID | Requirement | Priority | Implementation Status |
@@ -367,7 +406,31 @@ The platform is organized as a separated frontend and backend:
 | FR-REV-7 | The winner shall be determined by final disc count. | High | Implemented |
 | FR-REV-8 | The system shall save final piece counts and result after completion. | High | Implemented |
 
-#### 3.9 Game Records, Profiles, and Statistics
+#### 3.9 Interactive Tutorials
+| ID | Requirement | Priority | Implementation Status |
+|----|-------------|----------|-----------------------|
+| FR-TUT-1 | Each game shall provide a "Tutorial" button to enter guided walkthrough mode. | High | Implemented |
+| FR-TUT-2 | Tutorial mode shall highlight the target move with a pulsing visual indicator. | High | Implemented |
+| FR-TUT-3 | Non-target interactive elements shall be dimmed and non-clickable during tutorial mode. | High | Implemented |
+| FR-TUT-4 | Each tutorial step shall display explanatory text describing the strategy behind the move. | High | Implemented |
+| FR-TUT-5 | The tutorial shall use scripted AI responses instead of the real AI algorithm. | High | Implemented |
+| FR-TUT-6 | The tutorial shall display a step counter showing current progress. | Medium | Implemented |
+| FR-TUT-7 | The system shall not save game results during tutorial mode. | High | Implemented |
+| FR-TUT-8 | The user shall be able to exit the tutorial at any time, resetting the game to normal mode. | Medium | Implemented |
+| FR-TUT-9 | Tutorial scripts shall use only valid game moves that produce correct board states. | High | Implemented |
+| FR-TUT-10 | A "Tutorial Complete" message shall appear after the final step with an option to finish. | Medium | Implemented |
+
+#### 3.10 In-Game Tips and Algorithm Information
+| ID | Requirement | Priority | Implementation Status |
+|----|-------------|----------|-----------------------|
+| FR-TIPS-1 | Each game shall provide a collapsible tips panel accessible via a "?" button. | High | Implemented |
+| FR-TIPS-2 | The tips panel shall display the game objective. | High | Implemented |
+| FR-TIPS-3 | The tips panel shall display the game rules. | High | Implemented |
+| FR-TIPS-4 | The tips panel shall display strategy tips for the player. | High | Implemented |
+| FR-TIPS-5 | The tips panel shall display the AI algorithm name and a plain-language description of how it works. | High | Implemented |
+| FR-TIPS-6 | The tips panel shall expand and collapse with a smooth animation. | Low | Implemented |
+
+#### 3.11 Game Records, Profiles, and Statistics
 | ID | Requirement | Priority | Implementation Status |
 |----|-------------|----------|-----------------------|
 | FR-STATS-1 | The system shall save completed game records with user, game type, result, duration, user score, and AI score. | High | Implemented |
@@ -378,7 +441,7 @@ The platform is organized as a separated frontend and backend:
 | FR-STATS-6 | The system shall provide recent game history for the authenticated user. | Medium | Implemented |
 | FR-STATS-7 | The system shall provide profile information including rating and win rate. | Medium | Implemented |
 
-#### 3.10 Leaderboards
+#### 3.12 Leaderboards
 | ID | Requirement | Priority | Implementation Status |
 |----|-------------|----------|-----------------------|
 | FR-LB-1 | The system shall provide a global leaderboard ranked by overall user rating. | High | Implemented |
@@ -390,10 +453,12 @@ The platform is organized as a separated frontend and backend:
 ### 4. External Interface Requirements
 
 #### 4.1 User Interface Requirements
-- The UI shall use a dark, casino-style visual theme with neon-style accent colors.
-- The authentication screen shall support sign-in, sign-up, and guest access.
+- The UI shall use a dark, casino-style visual theme with neon-style accent colors and glassmorphism effects.
+- The authentication screen shall use a split layout with a branding panel (left) and form panel (right), with a password strength indicator and visibility toggle.
+- The home screen shall include a hero section with animated particles, platform statistics, game cards with difficulty badges, feature highlights, and a how-it-works guide.
+- Each game screen shall show current status, scores, turns, results, reset controls, a tips panel ("?" button), and a tutorial button.
 - Buttons shall visually indicate disabled, loading, and interactive states.
-- Game screens shall show current status, scores, turns, results, and reset controls.
+- Tutorial mode shall highlight target moves with a pulsing gold glow and dim non-target elements.
 - The layout shall be responsive for desktop and mobile browser sizes.
 - The frontend shall show understandable errors for backend or database connectivity failures.
 
@@ -434,7 +499,7 @@ The platform is organized as a separated frontend and backend:
 
 | ID | Requirement | Target / Rule | Implementation Status |
 |----|-------------|---------------|-----------------------|
-| NFR-PERF-1 | Frontend production bundle should stay lightweight. | Less than 100 KB gzipped target | Implemented target documented |
+| NFR-PERF-1 | Frontend production bundle should stay lightweight. | Less than 100 KB gzipped target | Implemented (~63 KB gzipped) |
 | NFR-PERF-2 | API responses should be fast for ordinary requests. | Less than 100 ms target under normal load | Implemented target documented |
 | NFR-PERF-3 | AI decisions should feel interactive. | Less than 500 ms target for visible AI turns | Implemented with short turn delays |
 | NFR-SEC-1 | Passwords shall never be stored in plain text for registered users. | bcryptjs with 10 rounds | Implemented |
@@ -446,8 +511,10 @@ The platform is organized as a separated frontend and backend:
 | NFR-REL-2 | The backend shall expose health status for deployment checks. | `/health` endpoint verifies database | Implemented |
 | NFR-REL-3 | Database migrations shall be repeatable. | `CREATE IF NOT EXISTS` and safe column additions | Implemented |
 | NFR-MAINT-1 | Source shall be separated by frontend, backend, routes, middleware, migrations, and game modules. | Clear directory boundaries | Implemented |
+| NFR-MAINT-2 | Tutorial scripts and game tips shall be stored in dedicated data modules, separate from game logic. | Data files in `src/data/` | Implemented |
 | NFR-COMP-1 | The application shall run on common operating systems that support Node.js and PostgreSQL. | Windows/macOS/Linux compatible scripts | Implemented |
 | NFR-DEPLOY-1 | The project shall support automated build and deployment checks. | GitHub Actions workflow | Implemented |
+| NFR-UX-1 | Tutorial mode shall provide a guided, distraction-free learning experience. | Highlighted moves, dimmed elements, step-by-step text | Implemented |
 
 ### 6. Data Validation and Business Rules
 
@@ -462,6 +529,8 @@ The platform is organized as a separated frontend and backend:
 | BR-7 | Each registered or guest user must have exactly one leaderboard row. |
 | BR-8 | Game records must belong to an authenticated user. |
 | BR-9 | Guest usernames and emails must be generated uniquely from UUID values. |
+| BR-10 | Tutorial mode shall not create game records or modify user statistics. |
+| BR-11 | Tutorial scripts shall only reference valid game moves for their respective game. |
 
 ### 7. Acceptance Criteria
 
@@ -477,6 +546,9 @@ The platform is organized as a separated frontend and backend:
 | AC-8 | The frontend production build completes successfully with `npm run build`. |
 | AC-9 | Backend migrations run successfully against PostgreSQL with `npm run migrate`. |
 | AC-10 | Backend health checks pass when PostgreSQL and required tables are available. |
+| AC-11 | Each game's tutorial can be started, followed step-by-step, and completed or exited without errors. |
+| AC-12 | Each game's tips panel can be opened and displays objective, rules, strategy tips, and AI algorithm information. |
+| AC-13 | No game results are saved to the database during tutorial mode. |
 
 ### 8. Verification Plan
 
@@ -488,6 +560,8 @@ The platform is organized as a separated frontend and backend:
 | Backend health | Run `cd backend && npm test` with PostgreSQL configured |
 | Authentication | Manually test register, login, guest login, logout, session restore |
 | Game flow | Complete each game and confirm saved records |
+| Tutorial flow | Start tutorial in each game, follow all steps, verify completion message, exit and verify game resets |
+| Tips panel | Open tips panel in each game, verify all sections display correctly including AI algorithm |
 | Leaderboards | Query global and per-game leaderboard endpoints after saved games |
 | Deployment | Use configured GitHub Actions, Vercel, Railway, and environment variables |
 
@@ -495,10 +569,16 @@ The platform is organized as a separated frontend and backend:
 
 | Source Area | SRS Coverage |
 |-------------|--------------|
-| `frontend/src/screens/AuthScreen.jsx` | Authentication UI requirements |
+| `frontend/src/screens/AuthScreen.jsx` | Authentication UI requirements (FR-AUTH-1 to FR-AUTH-13) |
 | `frontend/src/context/AuthContext.jsx` | Session persistence and logout requirements |
 | `frontend/src/api/client.js` | API client, token, retry, and error behavior |
-| `frontend/src/games/*.jsx` | Six game-specific functional requirements |
+| `frontend/src/App.jsx` | Game hub requirements (FR-HUB-1 to FR-HUB-8) |
+| `frontend/src/games/*.jsx` | Six game-specific functional requirements and tutorial integration |
+| `frontend/src/components/GameTips.jsx` | Tips panel requirements (FR-TIPS-1 to FR-TIPS-6) |
+| `frontend/src/components/TutorialOverlay.jsx` | Tutorial overlay UI (FR-TUT-2 to FR-TUT-10) |
+| `frontend/src/hooks/useTutorial.js` | Tutorial state machine logic |
+| `frontend/src/data/tutorialScripts.js` | Tutorial step definitions (FR-TUT-4, FR-TUT-5, FR-TUT-9) |
+| `frontend/src/data/gameTipsData.js` | Game tips and algorithm data (FR-TIPS-2 to FR-TIPS-5) |
 | `backend/routes/auth.js` | Registration, login, guest user, JWT issuing |
 | `backend/routes/games.js` | Game record, profile, stats, history, rating updates |
 | `backend/routes/leaderboard.js` | Global and per-game leaderboard requirements |
@@ -513,7 +593,7 @@ The platform is organized as a separated frontend and backend:
 | Guest users are persisted indefinitely | Database can accumulate temporary accounts | Add cleanup policy in future release |
 | Simple rating model | Ratings are easy to understand but not full Elo | Documented as Elo-style; can be expanded later |
 | Limited automated frontend tests | UI regressions may require manual checks | Add Vitest/Playwright tests as future work |
-| Root `src/` contains earlier prototype code | May confuse maintainers | Keep documented or remove when no longer needed |
+| Tutorial scripts are static | Cannot adapt to rule changes without manual script updates | Scripts are data-driven and separated from game logic for easy maintenance |
 
 ### 11. Future Enhancements
 
@@ -525,6 +605,8 @@ The platform is organized as a separated frontend and backend:
 - Add cleanup or expiration rules for guest accounts.
 - Move authoritative game result validation to the backend for competitive production use.
 - Add accessibility audits for keyboard navigation, focus order, and screen reader labels.
+- Add adaptive tutorial difficulty that adjusts to the player's skill level.
+- Add multiplayer support for player-vs-player games.
 
 ---
 

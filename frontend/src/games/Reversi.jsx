@@ -1,11 +1,14 @@
 import { useState, useEffect } from "react";
 import api from "../api/client.js";
 import { useAuth } from "../context/AuthContext.jsx";
+import GameTips from "../components/GameTips.jsx";
+import { GAME_TIPS } from "../data/gameTipsData.js";
+import { useTutorial } from "../hooks/useTutorial.js";
+import TutorialOverlay from "../components/TutorialOverlay.jsx";
 
 const SIZE = 6;
 const DIRS = [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
 
-// Positional weight table — corners are king
 const W = [
   [100,-20, 10, 10,-20,100],
   [-20,-50,  1,  1,-50,-20],
@@ -126,21 +129,22 @@ export default function Reversi({ onBack }) {
   const [thinking, setThinking] = useState(false);
   const [result, setResult] = useState(null);
   const [hoverCell, setHoverCell] = useState(null);
+  const [showTips, setShowTips] = useState(false);
   const [startTime] = useState(Date.now());
   const [saving, setSaving] = useState(false);
+  const tutorial = useTutorial("reversi");
 
   const validMoveKeys = playerTurn && !result && !thinking
     ? getValidMoves(board, "B").map(([r, c]) => `${r}-${c}`)
     : [];
 
-  // AI turn
   useEffect(() => {
+    if (tutorial.active) return;
     if (playerTurn || result || thinking) return;
     const aiMoves = getValidMoves(board, "W");
     if (aiMoves.length === 0) {
       const over = checkGameOver(board);
       if (over) { setResult(over); return; }
-      // AI has no moves — pass back to player
       setPlayerTurn(true);
       return;
     }
@@ -152,7 +156,7 @@ export default function Reversi({ onBack }) {
       const over = checkGameOver(nb);
       if (over) { setResult(over); setThinking(false); return; }
       if (getValidMoves(nb, "B").length === 0) {
-        setPlayerTurn(false); // player has no moves, AI goes again
+        setPlayerTurn(false);
       } else {
         setPlayerTurn(true);
       }
@@ -161,9 +165,8 @@ export default function Reversi({ onBack }) {
     return () => clearTimeout(t);
   }, [playerTurn, board, result]);
 
-  // Save game
   useEffect(() => {
-    if (!result || !user || saving) return;
+    if (!result || !user || saving || tutorial.active) return;
     setSaving(true);
     const { B, W: Wc } = countPieces(board);
     const dur = Math.round((Date.now() - startTime) / 1000);
@@ -174,13 +177,39 @@ export default function Reversi({ onBack }) {
 
   function handleCellClick(r, c) {
     if (!playerTurn || result || thinking) return;
+
+    if (tutorial.active) {
+      const hm = tutorial.highlightMove;
+      if (!hm || hm[0] !== r || hm[1] !== c) return;
+      if (getFlips(board, r, c, "B").length === 0) return;
+      const nb = applyMove(board, r, c, "B");
+      setBoard(nb);
+      const over = checkGameOver(nb);
+      if (over) { setResult(over); tutorial.advance(); return; }
+      if (tutorial.aiMove !== null) {
+        setPlayerTurn(false);
+        setTimeout(() => {
+          const [ar, ac] = tutorial.aiMove;
+          const nb2 = applyMove(nb, ar, ac, "W");
+          setBoard(nb2);
+          const over2 = checkGameOver(nb2);
+          if (over2) { setResult(over2); }
+          else setPlayerTurn(true);
+          tutorial.advance();
+        }, 500);
+      } else {
+        tutorial.advance();
+      }
+      return;
+    }
+
     if (getFlips(board, r, c, "B").length === 0) return;
     const nb = applyMove(board, r, c, "B");
     setBoard(nb);
     const over = checkGameOver(nb);
     if (over) { setResult(over); return; }
     if (getValidMoves(nb, "W").length === 0) {
-      setPlayerTurn(true); // AI has no moves — player goes again
+      setPlayerTurn(true);
     } else {
       setPlayerTurn(false);
     }
@@ -194,19 +223,22 @@ export default function Reversi({ onBack }) {
     setHoverCell(null);
   }
 
+  function handleStartTutorial() { reset(); tutorial.start(); }
+  function handleExitTutorial() { tutorial.exit(); reset(); }
+
   const { B, W: Wc } = countPieces(board);
 
   const statusText = result
-    ? result === "win" ? `You Win! 🎉  (${B} – ${Wc})`
+    ? result === "win" ? `You Win!  (${B} – ${Wc})`
       : result === "draw" ? "It's a Draw!"
       : `AI Wins!  (${Wc} – ${B})`
     : thinking ? "AI is thinking..."
     : playerTurn
-      ? validMoveKeys.length > 0 ? "Your turn  (Black ⚫)" : "No moves — AI plays again"
-      : "AI's turn  (White ⚪)";
+      ? validMoveKeys.length > 0 ? "Your turn  (Black)" : "No moves — AI plays again"
+      : "AI's turn  (White)";
 
   return (
-    <div className="app">
+    <div className={`app ${tutorial.active ? "tutorial-active" : ""}`}>
       <header className="header">
         <div className="logo">
           <span className="logo-icon">⚡</span>
@@ -215,14 +247,30 @@ export default function Reversi({ onBack }) {
         <button className="back-btn" onClick={onBack}>← Back</button>
       </header>
       <main className="main">
-        <h2 className="game-title" style={{ color: "#22d3ee" }}>Reversi</h2>
+        <div className="game-title-row">
+          <h2 className="game-title" style={{ color: "#22d3ee" }}>Reversi</h2>
+          <button className="tips-toggle" onClick={() => setShowTips(t => !t)}>{showTips ? "✕" : "?"}</button>
+          <button className="tutorial-toggle" onClick={tutorial.active ? handleExitTutorial : handleStartTutorial}>
+            {tutorial.active ? "Exit Tutorial" : "Tutorial"}
+          </button>
+        </div>
+        <GameTips {...GAME_TIPS.reversi} isOpen={showTips} />
+        {tutorial.active && (
+          <TutorialOverlay
+            text={tutorial.text}
+            stepIndex={tutorial.stepIndex}
+            totalSteps={tutorial.totalSteps}
+            isComplete={tutorial.isComplete}
+            onExit={handleExitTutorial}
+          />
+        )}
         <p className={`game-status ${result ? (result === "win" ? "status-win" : result === "draw" ? "status-draw" : "status-lose") : ""}`}>
           {statusText}
         </p>
 
         <div className="rev-score-row">
-          <div className="rev-score-chip rev-black-chip">⚫ Black (You) — {B}</div>
-          <div className="rev-score-chip rev-white-chip">⚪ White (AI) — {Wc}</div>
+          <div className="rev-score-chip rev-black-chip">Black (You) — {B}</div>
+          <div className="rev-score-chip rev-white-chip">White (AI) — {Wc}</div>
         </div>
 
         <div className="rev-board" onMouseLeave={() => setHoverCell(null)}>
@@ -231,10 +279,12 @@ export default function Reversi({ onBack }) {
               const key = `${r}-${c}`;
               const isValid = validMoveKeys.includes(key);
               const isHover = hoverCell === key && isValid;
+              const isHighlight = tutorial.active && tutorial.highlightMove &&
+                tutorial.highlightMove[0] === r && tutorial.highlightMove[1] === c;
               return (
                 <div
                   key={key}
-                  className={`rev-cell ${isValid ? "rev-valid" : ""} ${isHover ? "rev-hover" : ""}`}
+                  className={`rev-cell ${isValid ? "rev-valid" : ""} ${isHover ? "rev-hover" : ""} ${isHighlight ? "tutorial-highlight" : ""}`}
                   onMouseEnter={() => setHoverCell(key)}
                   onClick={() => handleCellClick(r, c)}
                 >
@@ -251,7 +301,7 @@ export default function Reversi({ onBack }) {
           )}
         </div>
 
-        {result && (
+        {result && !tutorial.active && (
           <button className="reset-btn" onClick={reset} disabled={saving}>
             {saving ? "Saving..." : "Play Again"}
           </button>
